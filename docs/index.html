@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>A General Optimization Framework for Dynamic Time Warping</title>
+	<!-- Twitter Card data -->
+	<meta name="twitter:card" value="Webpack basic starter project">
+	<meta name="Description" content="A simple webpack starter project for your basic web development needs."/>
+	<!-- Open Graph data -->
+	<meta property="og:title" content="Webpack basic starter project" />
+	<meta property="og:type" content="article" />
+	<meta property="og:url" content="https://lifenautjoe.github.io/webpack-starter-basic/" />
+	<meta property="og:image" content="https://i.snag.gy/i3eMBc.jpg" />
+	<meta property="og:description" content="A simple webpack starter project for your basic web development needs." />
+	<!-- Mobile header color for Chrome, Firefox OS and Opera -->
+	<meta name="theme-color" content="#ff4970">
+	<!-- Mobile header color Windows Phone -->
+	<meta name="msapplication-navbutton-color" content="#ff4970">
+	<!-- Mobile header color for iOS Safari (supports black, black-translucent or default) -->
+	<meta name="apple-mobile-web-app-status-bar-style" content="default">
+	<link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Lato:400,600" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css?family=Muli:400,600" rel="stylesheet">
+	<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+	<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+</head>
+
+    <body>
+        <nav class="navbar navbar-default navbar-fixed-top" id="mainNav">
+    <div class="container">
+
+        <!-- Brand and toggle get grouped for better mobile display-->
+        <div class="navbar-header">
+            <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+            <span class="sr-only">Toggle navigation</span> Menu <i class="fa fa-bars"></i>
+            </button>
+            <a class="navbar-brand page-scroll" href="/">GDTW</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling-->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a class="page-scroll" href="#about">About</a></li>
+                <li><a class="page-scroll" href="#demo">Demo</a></li>
+                <li><a class="page-scroll" href="#software">Software</a></li>
+                <li><a class="page-scroll" href="#quickstart">Quick Start</a></li>
+                <li><a class="page-scroll" href="#reference">API Reference</a></li>
+                <!-- <li><a class="page-scroll" href="#dataset">Dataset</a></li> -->
+                <li><a class="page-scroll" href="https://arxiv.org/pdf/1905.12893.pdf" target="_blank" rel="noopener noreferrer">ArXiv Paper</a></li>
+            </ul>
+        </div>
+
+    </div><!-- end container -->
+</nav>
+        <section id="header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-sm-12">
+                <h1>A General Optimization Framework for Dynamic Time Warping</h1>
+                <h3>Dave Deriso and Stephen Boyd</h3>
+            </div>
+        </div><!-- end row -->
+    </div><!-- end container -->
+</section>
+        <section id="about">
+    <div class="container">
+        <div class="row">
+            
+            <div class="col-md-7">
+                <h2>The Dynamic Time Warping Problem</h2>
+                <p>The goal of <b>dynamic time warping</b> (DTW) is to find a time warping function that transforms, or "warps," time in order to approximately align two signals together.
+                    There are a diversity of applications for DTW, and a few examples are illustrated in the demonstration below.
+                    Despite its popularity, available DTW methods suffer from several drawbacks that many researchers have attempted to address over the years, including
+                        susceptibility to local minima that results in poor alignments and
+                        sharp irregularities in the warping function known as singularities.
+                    Many pre- or post-processing strategies have been proposed to ameliorate these issues, but no general solution has been demonstrated until now.
+                    Our formulation solves these issues by introducing penalty terms in the objective that explicitly minimize roughness and over-fitting.
+                    Our approach results in smoother warping functions without requiring any pre-processing.
+                    We offer a linear time method for solving warping problems, implemented as an open-source C++ and Python package.
+                    <!-- We also present a novel dataset of time-warping functions, and compare our performance to that of existing approaches. -->
+                </p>
+
+                <div class="pad"></div>
+                <a class="btn btn-lg btn-default" href="https://arxiv.org/pdf/1905.12893.pdf" target="_blank" rel="noopener noreferrer">Read the paper</a>
+            </div>
+
+            <div class="col-md-5">
+                <figure>
+                    <img 
+                        class="img-responsive img-rounded" 
+                        src="src/images/home/example_functions.png"
+                    >
+                    <figcaption>
+                        <i>Top.</i>    Signal \(x\) will be time-warped to align to target signal \(y\).
+                        <i>Middle.</i> Warping function \( \phi \) drawn as lines between \(x\) and \(y\).
+                        <i>Bottom.</i> The time-warped signal \( (x \circ \phi) \) and target signal \(y\).
+                    </figcaption>
+                </figure>
+            </div>
+
+        </div><!-- end row -->
+    </div><!-- end container -->
+</section>
+        $$ 
+\newcommand{\dt}{{\hspace{1pt} dt}}
+\newcommand{\Rcum}{R^\mathrm{cum}}
+\newcommand{\Lamcum}{\lambda ^\mathrm{cum}}
+\newcommand{\calRcum}{\mathcal R^\mathrm{cum}}
+\newcommand{\Rinst}{R^\mathrm{inst}}
+\newcommand{\calRinst}{\mathcal R^\mathrm{inst}}
+\newcommand{\Laminst}{\lambda ^\mathrm{inst}}
+\newcommand{\Smin}{s^\mathrm{min}}
+\newcommand{\Smax}{s^\mathrm{max}}
+$$
+
+<section class="gray" id="demo">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h2 class="text-center">Interactive Demo</h2><hr>
+            </div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-12" style="height:20px; display: block;"></div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-12">
+                <p class="text-center">Choose a dataset and adjust the sliders below to interactively explore how the smoothing and cumulative warp regularizers affect the results. </p>
+            </div>
+        </div><!-- end row -->
+        
+        <div class="row">
+            <div class="col-md-12" style="height:15px; display: block;"></div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-2 text-center">
+                <a class="btn btn-lg btn-default choose_data btn-success">EEG</a>
+            </div>
+            <div class="col-md-2 text-center">
+                <a class="btn btn-lg btn-default choose_data">Wafer</a>
+            </div>
+            <div class="col-md-3 text-center">
+                <a class="btn btn-lg btn-default choose_data">Quadratic</a>
+            </div>
+            <div class="col-md-2 text-center">
+                <a class="btn btn-lg btn-default choose_data">Linear</a>
+            </div>
+            <div class="col-md-3 text-center">
+                <a class="btn btn-lg btn-default choose_data">Triangle Square</a>
+            </div>
+            <!-- <div class="col-md-3 text-center">
+                <a class="btn btn-lg btn-default choose_data">Medical</a>
+            </div> -->
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-12" style="height:20px; display: block;"></div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-12">
+                <p id="eeg"       class="data_info hidden text-center">These are two EEG signals, <i>a.k.a.</i> "brain waves," recorded from an individual performing a P300 task (<a href="https://www.epfl.ch/labs/mmspg/research/page-58317-en-html/bci-2/bci_datasets/" target="_blank" rel="noopener noreferrer">source</a>).</p>
+                <p id="wafer"     class="data_info hidden text-center">These are voltages from silicon wafers being tested on an assembly line (<a href="https://www.cs.ucr.edu/~eamonn/time_series_data_2018/" target="_blank" rel="noopener noreferrer">source</a>).</p>
+                <p id="quadratic" class="data_info hidden text-center">This is a sine wave warped to another sine wave composed with a quadratic function.</p>
+                <p id="linear"    class="data_info hidden text-center">This is a sine wave warped to another sine wave composed with a piece-wise linear function. This scenario occurs when the same signal is being clocked by two different recorders, and one clock stops updating momentarily.</p>
+                <p id="triangle_square"    class="data_info hidden text-center">This is a triangle wave warped to a square wave.</p>
+            </div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-12" style="height:20px; display: block;"></div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-12">
+
+                <!-- src="'./src/images/example/example_ecg-lamda_ins=0_1-lamda_cum=50_all.svg')" -->
+                <figure style="
+                    border-radius:20px; 
+                    border: solid 2px white;
+                    background: white;
+                    padding-right: 10px;
+                    padding-bottom: 20px;
+                ">
+                    <img 
+                        id="demo_warping" 
+                        class="img-responsive img-rounded"
+                        src="src/images/demo/eeg/lambda_inst=1-lambda_cum=0_1.svg"
+                        
+                    />
+                    <!-- 
+                    <figcaption id="eeg"       class="data_info hidden text-center">These are two EEG signals, <i>a.k.a.</i> "brain waves," recorded from an individual performing a P300 task.</figcaption>
+                    <figcaption id="wafer"     class="data_info hidden text-center">These are voltages from silicon wafers being tested on an assembly line.</figcaption>
+                    <figcaption id="quadratic" class="data_info hidden text-center">This is a sine wave warped to another sine wave that was composed with a quadratic function.</figcaption>
+                    <figcaption id="linear"    class="data_info hidden text-center">This is a sine wave warped to another sine wave that was composed with a piece-wise linear function. This scenario occurs when the same signal is being clocked by two different recorders, and one clock stops updating momentarily.</figcaption>
+                    <figcaption id="triangle_square"    class="data_info hidden text-center">This is a triangle wave warped to a square wave.</figcaption> 
+                    -->
+                </figure>
+            </div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-12" style="height:25px;"></div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-12">
+                <div id="preloader_progress_container">
+                    <p class="text-center">
+                        Please wait while this example loads.
+                    </p>
+                    <div class="progress">
+                        <div id="preloader_progress_bar" class="progress-bar progress-bar-striped" role="progressbar" style="width: 0%;"></div>
+                  </div>
+                </div>
+            </div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-12">
+                <center>
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label class="h3" style="margin-right:20px">\( \Laminst \)</label>
+                        <input id="lambda_inst" data-slider-id='lambda_inst_slider' type="text" style="width:500px;"/>
+                        <p>This hyperparameter increases the penalty on roughness. Lower values result in singularities.</p>
+                    </div>
+                </form>
+                </center>
+            </div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-12">
+                <center>
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <label class="h3" style="margin-right:20px">\( \Lamcum \)</label>
+                        <input id="lambda_cum" data-slider-id='lambda_cum_slider' type="text" style="width:500px;"/>
+                        <p>This hyperparameter increases the penalty on over-fitting. Higher values result in a gentler warp.</p>
+                    </div>
+                </form>
+                </center>
+            </div>
+        </div><!-- end row -->
+
+    </div><!-- end container -->
+</section>
+        <section id="software">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+
+                <h2 class="text-center">Software</h2><hr>
+                <h3>General</h3>
+                <p>
+                    The documentation is written to be consistent with the paper, and will often refer to the variable and symbols used in the paper.
+                    So that the community can benefit from a common knowledge-base, software-related questions should be submitted via GitHub issues.
+                </p>
+
+                <h3>System Requirements</h3>
+                <p>
+                    The Python package requires Python 3.6 or greater.
+                    There are pre-compiled binary distributions available for OSX, Linux, and Windows.
+                </p>
+
+                <h3>Installation</h3>
+                <p>
+                    The Python package is distributed through PyPi and installed using the following command:
+                </p>
+<pre><code class="language-shell">pip install gdtw</code></pre>
+                <p>
+                    As an alternative for Anaconda users, the package can be installed using the following command:
+                </p>
+<pre><code class="language-shell">conda install gdtw
+</code></pre>
+                <h3>Source Code</h3>
+                <p>
+                    <a 
+                        class="github-button" 
+                        href="" 
+                        data-size="large" 
+                        data-show-count="true" 
+                        aria-label="GitHub"
+                        style="
+                            height: 27px;
+                            line-height: 27px;
+                            padding: 12px 10px;
+                            font-size: 15px;"
+                        >Source Code on Github
+                    </a>
+                </p>
+                <p>
+                    You may download the source code by following the link above, or by cloning the repo with the following command:
+                </p>
+<pre><code class="language-shell">git clone https://www.github.com/dderiso/gdtw</code></pre>
+                <p> 
+                    
+                </p>
+
+                <h3>Custom Compilation</h3>
+                <p>
+                    General notes on compilation are provided as comments in <code>setup.py</code>. 
+                    Compilation requires the Numpy C++ bindings (automatically installed with Numpy) and <b>g++</b> compiler with support for <b>C++11</b>.
+                </p>
+<pre><code class="language-shell">git clone https://www.github.com/dderiso/gdtw
+cd gdtw
+python setup.py install
+</code></pre>
+                
+                <h3>License</h3>
+                <p>
+                    This software is provided under the Apache license. 
+                    <!-- See <a href="" target="_blank" rel="noopener noreferrer">LICENSE</a>. -->
+                </p>
+
+                <h3>Citing</h3>
+                <p>
+                    Deriso, Dave, and Stephen Boyd. A general optimization framework for dynamic time warping. <i>arXiv preprint arXiv:1905.12893</i>, 2019.
+                </p>
+
+                <h3>Questions</h3>
+                <p>
+                    So that the community can benefit from a common knowledge-base, software-related questions should be submitted via GitHub issues. 
+                    Other questions about code or documenation can be addressed to Dave Deriso (<code>dderiso/at/alunmi-dot-stanford-dot-edu</code>).
+                </p>
+            </div>
+        </div> <!-- end row -->
+    </div> <!-- end container -->
+</section>
+        <!-- start section -->
+        <section id="quickstart">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h2 class="text-center">Quick Start</h2><hr>
+                    </div>
+                </div> <!-- end row -->
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <h3>1. Generate Signals</h3>
+                        <p>
+                            In this example, we'll define signal \( x(t) = \sin(2 \pi * 5 t) \) to be a 5Hz sine wave and signal \( y(t) = x(q(t)) \) 
+                            to be the same 5Hz sine wave but warped with a quadratic time warping function \( q(t) = t^2 \).
+                        </p>
+                    </div>
+                </div> <!-- end row -->
+
+                <div class="row">
+                    <div class="col-md-12">
+<pre><code class="language-python">import numpy as np
+t = np.linspace(0,1,1000)
+q = lambda t_: t_**2
+x = lambda t_: np.sin(2*np.pi * 5 * t_)
+y = lambda t_: x(q(t_))
+</code></pre>
+                    </div>
+                </div> <!-- end row -->
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <h3>2. Plot Signals</h3>
+                        <p>
+                            The signals are plotted using the following code. 
+                            If you don't have <code>matplotlib</code> installed, run <code>pip install matplotlib</code> into your shell to install the library.
+                        </p>
+                    </div>
+                </div> <!-- end row -->
+
+                <div class="row">
+                    <div class="col-md-6">
+<pre><code class="language-python">import matplotlib.pyplot as plt
+plt.plot(t, y(t), '-', color='C1', label='y(t)')
+plt.plot(t, x(t), '-', color='C0', label='x(t)')
+plt.legend()
+plt.show()
+</code></pre>
+                    </div>
+                    <div class="col-md-6">
+                        <figure>
+                            <img 
+                                class="img-responsive img-rounded"
+                                src="src/images/quick_start/inputs.png"
+                            />
+                        </figure>
+                    </div>
+                </div> <!-- end row -->
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <h3>3. Perform Time Warping</h3>
+                        <p>
+                            To warp signal \( x \) into signal \( y \), we'll use the function 
+                            <code>gdtw.warp(x,y,params)</code> using the default parameters.
+                            We'll pass discretized signals \( x(t) \) and  \( y(t) \),  
+                            where \( t \) is a vector of \( N \) values \( 0 = t_1 < t_2 < \cdots < t_N = 1 \), 
+                            into arguments <code>x</code> and <code>y</code> as Numpy arrays.
+                        </p>
+                        <p>
+                            Recall that in our formulation, 
+                                the warping function is denoted as \( \phi \),
+                                the discretized warped time is denoted as \( \tau \),
+                                the discretized warped signal is denoted as \( \hat{x} = x(\tau) \), 
+                                and objective function evaluated on \( \tau \) (aka. DTW distance) is denoted as \( \hat{f}(\tau) \) 
+                                (see \( \S 4 \) in the paper). 
+                            Correspondingly, the function returns  \( \phi \), \( x(\tau) \), and \( \hat{f}(\tau) \) 
+                            as tuple consisting of a function, a Numpy array, and a Numpy double precision float.
+                         </p>
+                    </div>
+                </div> <!-- end row -->
+
+                <div class="row">
+                    <div class="col-md-6">
+<pre><code class="language-python">import gdtw
+phi, x_tau, f_tau, g = gdtw.warp(x(t), y(t))
+</code></pre>  
+                    </div>
+                </div> <!-- end row -->
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <h3>4. Plot Warped Signals</h3>
+                        <p>
+                            The warped signals are plotted using the following code. 
+                            You can plot the discretized result, \( x ( \tau ) \).
+                        </p>
+                    </div>
+                </div> <!-- end row -->
+
+                <div class="row">
+                    <div class="col-md-6">
+<pre><code class="language-python">plt.plot(t,y(t),       '-', color='C1', label='y(t)')
+plt.plot(t,x_tau, '--', color='C0', label='x(tau)')
+plt.legend()
+plt.show()
+</code></pre>  
+                    </div>
+                    <div class="col-md-6">
+                        <figure>
+                            <img 
+                                class="img-responsive img-rounded"
+                                src="src/images/quick_start/warped_x_tau.png"
+                            />
+                        </figure>
+                    </div>
+                </div> <!-- end row -->
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <p>
+                            Alternatively, you can plot the composition \( x \circ \phi \).
+                         </p>
+                    </div>
+                </div> <!-- end row -->
+
+                <div class="row">
+                    <div class="col-md-6">
+<pre><code class="language-python">plt.plot(t,y(t),       '-', color='C1', label='y(t)')
+plt.plot(t,x(phi(t)), '--', color='C0', label='x(phi(t))')
+plt.legend()
+plt.show()
+</code></pre>  
+                    </div>
+                    <div class="col-md-6">
+                        <figure>
+                            <img 
+                                class="img-responsive img-rounded"
+                                src="src/images/quick_start/warped_x.png"
+                            />
+                        </figure>
+                    </div>
+                </div> <!-- end row -->
+
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <h3>4. Custom Parameters</h3>
+                        <p>
+                            As illustrated in the <a href="#demo">interactive demonstration</a> above, 
+                            the choice of hyper-parameters greatly affects the solution.
+                            In addition to specifying hyper-parameter values, you can also specify custom loss and regularization functions.
+                            Together, you can design a custom objective function to better address more complicated problems.
+                            A table of allowable parameters is included in the <a href="#reference">API Reference</a>.
+                        </p>
+
+                    </div>
+                </div> <!-- end row -->
+
+                <div class="row">
+                    <div class="col-md-12">
+<pre><code class="language-python">gdtw.warp(x, y, params={
+    "lambda_cum": 0.001, 
+    "lambda_inst": 0.001,
+    "Loss":   lambda x,y:      np.abs(x-y),
+    "R_cum":  lambda phi,t:    np.abs(phi-t),
+    "R_inst": lambda grad_phi: np.abs(grad_phi-1)
+})
+</code></pre>
+                    </div>   
+                </div> <!-- end row -->
+
+                <div class="row">
+                    <div class="col-md-12">
+
+                        <h3>6. Summary</h3>
+                        <p>
+                            Congratulations! You now know how to 
+                                time-warp two signals together, 
+                                inspect the warping function, 
+                                set hyper-parameter values, '
+                                and specify custom loss and regularization functions.
+                            This is all you need to know for most applications.
+                            
+                            <!--
+                            However,  
+                            Also, you may want to use this library for aligning multiple time-series to a common template (aka. group alignment, or group co-registration). 
+                            The next two examples will cover these topics and fill in the remaining 20% of your knowledge. 
+                            -->
+                        </p>
+
+                    </div>
+                </div> <!-- end row -->
+
+        </section>
+<!-- end section -->
+        <section id="reference">
+     <div class="container">
+        
+        <div class="row">
+            <div class="col-md-12">
+                <h2 class="text-center">API Reference</h2><hr>
+            </div>
+        </div><!-- end row -->
+        
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="function" id="gdtw.warp">gdtw.warp</h3>
+                <h4><code>gdtw.warp(x,y,params)</code></h4>
+                <p>
+                    Uses our formulation of dynamic time warping and method of iterative refinement to find a function \( \phi : t \to \tau \) that minimizes the difference between \( x(\phi(t)) \) and \( y(t) \). 
+
+                    Recall that in our formulation, 
+                        the warping function is denoted as \( \phi \),
+                        the discretized warped time is denoted as \( \tau \),
+                        the discretized warped signal is denoted as \( x(\tau) \), 
+                        and the objective function evaluated on \( \tau \) (aka. DTW distance) is denoted as \( \hat{f}(\tau) \) 
+                        (see \( \S 4 \) in the paper).
+                     
+                    Correspondingly, the function returns  
+                        \( \phi \), \( \tau \), \( x(\tau) \), and \( \hat{f}(\tau) \) 
+                    as tuple consisting of a function, two Numpy arrays, and a Numpy double precision float.
+                </p>
+            </div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-12">
+                <h4>Arguments</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Argument</th>
+                            <th scope="col">Type(s)</th>
+                            <th scope="col">Default</th>
+                            <th scope="col">Description</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <th scope="row"><code>x</code></td>
+                            <td class="code">np.ndarray or function</td>
+                            <td>Required</td>
+                            <td>
+                                \(x\) is a sequence, or \(x: R \to R \) is a function, that is being warped.
+                                Any specified function must have the following signature: 
+                                <pre><code class="language-python">(t:float) -> float</code></pre> 
+                                Here is an example of a valid function: 
+                                <pre><code class="language-python">lambda t: np.sin(2*np.pi * t)</code></pre>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>y</code></td>
+                            <td class="code">np.ndarray or function</td>
+                            <td>Required</td>
+                            <td>\(y\) is a sequence, or \(y: R \to R \) is a function, that serves as the target.
+                                Any specified function must have the following signature: 
+                                <pre><code class="language-python">(t:float) -> float</code></pre> 
+                                Here is an example of a valid function: 
+                                <pre><code class="language-python">lambda t: np.sin(2*np.pi * t)</code></pre>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>params</code></td>
+                            <td class="code">dictionary</td>
+                            <td class="code">{}</td>
+                            <!-- <td>See <a href="#gdtw.gdtw">params</a> for the list of possible values.</td> -->
+                            <td>
+                                Parameters are optional. When a parameter is left unspecified, the solver uses default value listed in the <a href="#ParameterTable">Parameter Table</a> below. 
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-12">
+                <h4 id="ParameterTable">Parameter Table</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Key</th>
+                            <th scope="col">Value Type(s)</th>
+                            <th scope="col">Default Value</th>
+                            <th scope="col">Description</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <th scope="row"><code>"lambda_inst"</code></td>
+                            <td class="code">np.double</td>
+                            <td class="code">0.1</td>
+                            <td>
+                                \(\Laminst \ge 0 \) is a positive hyperparameter for the regularization functional \(\calRinst\).
+                                This hyperparameter increases the penalty on the instantaneous amount of warping. 
+                                Higher values produce a smoother \( \phi \), and lower values result in singularities.
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>"lambda_cum"</code></td>
+                            <td class="code">np.double</td>
+                            <td class="code">1.0</td>
+                            <td>\(\Lamcum \ge 0\) is a positive hyperparameter for the regularization functional \(\calRcum\). 
+                                This hyperparameter increases the penalty on the cumulative amount of warping. 
+                                Higher values result in less over-fitting.
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row"><code>"Loss"</code></td>
+                            <td class="code">string or function</td>
+                            <td class="code">"L2"</td>
+                            <td>
+                                \( \mathcal{L} \) is the loss that ensures \( x( \phi (t)) \)  is close to a target \( y(t) \). 
+                                Fast C++ methods are invoked by passing a string instead of a function, built-in options include: <code>"L1"</code> or <code>"L2"</code>.
+                                Any specified function must have the following signature: 
+                                <pre><code class="language-python">(x:float, y:float) -> float</code></pre> 
+                                Here is an example of a valid function: 
+                                <pre><code class="language-python">lambda x,y: np.abs(x-y)</code></pre>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>"R_cum"</code></td>
+                            <td class="code">string or function</td>
+                            <td class="code">"L2"</td>
+                            <td>
+                                \( \calRcum \) is the regularization functional for the cumulative warp and reduces over-fitting.
+
+                                Fast C++ methods are invoked by passing a string instead of a function, built-in options include: <code>"L1"</code> or <code>"L2"</code>.
+                                Any specified function must have the following signature: 
+                                <pre><code class="language-python">(phi:float, t:float) -> float</code></pre> 
+                                Here is an example of a valid function: 
+                                <pre><code class="language-python">lambda phi,t: np.abs(phi-t)</code></pre>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>"R_inst"</code></td>
+                            <td class="code">string or function</td>
+                            <td class="code">"L2"</td>
+                            <td>
+                                \( \calRinst \) is the regularization functional for the instantaneous warp and improves the smoothness of the warping. 
+
+                                Any specified function must have the following signature: 
+                                <pre><code class="language-python">(grad_phi:float) -> float</code></pre> 
+                                Here is an example of a valid function: 
+                                <pre><code class="language-python">lambda grad_phi: np.abs(grad_phi-1)</code></pre>
+                                The constraint that the slope of \( \phi \) must be between \( s_\mathrm{min} \) and \( s_\mathrm{max} \) is handled in the solver outside of this function.
+                            </td>
+                        </tr>
+                        
+                        <tr>
+                            <th scope="row"><code>"N"</code></td>
+                            <td class="code">np.double</td>
+                            <td class="code">300</td>
+                            <td>\( N \) is the number of time points in the downsampled input. The computation time grown linearly as \( N \) increases. </code></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>"M"</code></td>
+                            <td class="code">np.double</td>
+                            <td class="code">165</td>
+                            <td>
+                                \( M \) is the search window size, and must satisfy \( M \le M_\mathrm{max}\). 
+                                When \( M \) is not explicitly set, \( M \) is computed as \( \mathrm{min}( 0.55*N, M_\mathrm{max}) \).
+                                With default settings \( N = 300 \) and \( M_\mathrm{max} = 300 \), \( M = 165 \) 
+                                The computation time grows quadratically as parameter \( M \) increases.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>"M_max"</code></td>
+                            <td class="code">np.double</td>
+                            <td class="code">300</td>
+                            <td>\( M_\mathrm{max} \) is the maximum search window size.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>"eta"</code></td>
+                            <td class="code">np.double</td>
+                            <td class="code">0.15</td>
+                            <td>
+                                \( \eta \) is the step size of the iterative refinement. 
+                                Smaller values result in fewer iterations, but may result in lower quality results.
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>"s_min"</code></td>
+                            <td class="code">np.double</td>
+                            <td class="code">1E-8</td>
+                            <td>
+                                \( s_\mathrm{min} \) specifies the constraint for the minimum slope of \( \phi \). 
+                                When this is non-zero, the warping function will be monotone increasing. 
+                                We can allow the slope of \( \phi \) be negative by choosing \( s_\mathrm{min} < 0 \).
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>"s_max"</code></td>
+                            <td class="code">np.double</td>
+                            <td class="code">1E8</td>
+                            <td>\( s_\mathrm{max} \) specifies the constraint for the maximum slope of \( \phi \).
+                                Large values allow \( \phi \) to have sharp discontinuities. 
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>"s_beta"</code></td>
+                            <td class="code">np.double</td>
+                            <td class="code">0</td>
+                            <td>
+                                \( s_\beta \) specifies a tolerance on the boundary constraints.
+                                The default is \(s_\beta = 0 \), which enforces boundary conditions \( \phi(0)=0 \) and \( \phi(1)=1 \).
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-12">
+                <h4>Returns</h4>
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th scope="row"><code>phi</code></td>
+                            <td class="code">function</td>
+                            <td>
+                                \( \phi [0,1]: R \to R \) is the time warping function that maps \( t \to \tau \).
+                                This function has the following signature: 
+                                <pre><code class="language-python">(t:float) -> np.double</code></pre>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>x_tau</code></td>
+                            <td class="code">np.ndarray</td>
+                            <td>\( x( \tau ) \in R^N \) is an array of length \( N \) that contains the discretized version of the time warped signal \( x \).</td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>f_tau</code></td>
+                            <td class="code">np.double</td>
+                            <td>\( \hat{f}(\tau) \), <i>a.k.a.</i> the "DTW distance", is the discretized version of the objective function evaluated on \( \tau \).</td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>g</code></td>
+                            <td class="code">GDTW</td>
+                            <td>This is a reference to the <code>GDTW</code> solver object. It's generally ignored.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-12">
+                <h4>Raises</h4>
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th scope="row"><code>ValueError</code></td>
+                            <td>This error is raised when <code>x</code> or <code>y</code> are not of type <code>np.ndarray</code> or do not have the required function signature <code>(t:float) -> float</code>.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><code>ValueError</code></td>
+                            <td>This error is raised when <code>params</code> is not of the <code>dictionary</code> type.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div><!-- end row -->
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <h4>Example 1</h4>
+                <p>
+                    This example is explained in detail in the <a href="#quickstart">quick start</a> tutorial.
+                </p>
+            </div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-6">
+<pre><code class="language-python">import numpy as np
+t = np.linspace(0,1,1000)
+q = lambda t_: t_**2
+x = lambda t_: np.sin(2*np.pi * 5 * t_)
+y = lambda t_: x(q(t_))
+
+import gdtw
+phi, x_tau, f_tau, g = gdtw.warp( x(t), y(t) )
+
+import matplotlib.pyplot as plt
+plt.plot(t,y(t),       '-', color='C1', label='y(t)')
+plt.plot(t,x_tau, '--', color='C0', label='x(tau)')
+plt.legend()
+plt.show()
+</code></pre>
+            </div>
+
+            <div class="col-md-6">
+                <figure>
+                    <img 
+                        class="img-responsive img-rounded"
+                        src="src/images/quick_start/warped_x_tau.png"
+                    />
+                </figure>
+            </div>
+        </div><!-- end row -->
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <h4>Example 2</h4>
+                <p>
+                    This method supports custom hyper-parameter values as well as custom loss and regularizer functionals. 
+                    The available options are listed in the <a href="#ParameterTable">Parameter Table</a> above.
+                </p>
+            </div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-12">
+<pre><code class="language-python">gdtw.warp(x, y, params={
+    "lambda_cum": 0.001, 
+    "lambda_inst": 0.001,
+    "Loss":   lambda x,y:      np.abs(x-y),
+    "R_cum":  lambda phi,t:    np.abs(phi-t),
+    "R_inst": lambda grad_phi: np.abs(grad_phi-1)
+})
+</code></pre>
+            </div>
+        </div><!-- end row -->
+
+        <div class="row">
+            <div class="col-md-6">
+                <h4>Performance</h4>
+                <p>The node costs are computed and stored in an \( M\times N \) array, and
+                the edge costs are computed on the fly and stored in an 
+                \( M\times M\times N \) array.
+                The computational cost of our dynamic programming procedure is order \( \mathcal{O}( N ) \) flops 
+                (not counting the evaluation of the loss and regularization terms).
+                With current hardware, it is entirely practical for \( N=1000 \) or (much) larger.
+                For example, \( N=1000 \) takes \( 0.83 \) ms to solve on a \( 4 \)-core Macbook and 
+                only \( 4 \) iterations are needed before the iterative refinement procedure terminates.  
+                </p>
+            </div>
+            <div class="col-md-6">
+                <figure>
+                    <img 
+                        class="img-responsive img-rounded"  
+                        src="src/images/home/regression_tests.png"
+                    />
+                    <figcaption class="text-center">
+                         Runtime as a function of \( N \).
+                    </figcaption>
+                </figure>
+            </div>
+        </div><!-- end row -->
+
+    </div><!-- end container -->
+</section>
+        <footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center" style="color:white;">
+                Site made with ☕️ and 🤍 by Dave Deriso
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-MML-AM_CHTML' async></script>
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-QC0DM1W2TP"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', 'G-QC0DM1W2TP');
+        </script>
+    <script type="text/javascript" src="main.63aaab0c55258949865d.js"></script></body>
+</html>
