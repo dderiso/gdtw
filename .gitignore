@@ -1,3 +1,7 @@
 .pyc
 .DS_Store
 __pycache__
+# build/*
+# dist/*
+gdtw.egg-info/*
+deploy_to_pypi.sh

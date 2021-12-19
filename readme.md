@@ -1,10 +1,14 @@
-## GDTW
+# GDTW
 
-This is the codebase for 
+## Citing 
 
 ```
-Deriso, Dave, and Stephen Boyd. A general optimization framework for dynamic time warping. 
-arXiv preprint arXiv:1905.12893, 2019.
+@article{deriso2019general,
+  title={A general optimization framework for dynamic time warping},
+  author={Deriso, Dave and Boyd, Stephen},
+  journal={arXiv preprint arXiv:1905.12893},
+  year={2019}
+}
 ```
 
 ## Documentation
