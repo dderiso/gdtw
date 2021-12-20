@@ -42,30 +42,12 @@ cpp_module = Extension(
   language="c++11"
 )
 
-long_description = '''
-# GDTW
-GDTW is a Python/C++ library that performs dynamic time warping. 
-It is based on a paper by Dave Deriso and Stephen Boyd.
-
-## Citing 
-
-```
-@article{deriso2019general,
-  title={A general optimization framework for dynamic time warping},
-  author={Deriso, Dave and Boyd, Stephen},
-  journal={arXiv preprint arXiv:1905.12893},
-  year={2019}
-}
-```
-
-## Documentation
-
-Please see [https://dderiso.github.io/gdtw](https://dderiso.github.io/gdtw) for full documentation and installation instructions.
-'''
+with open("readme.md","r") as f:
+  long_description = f.read();
 
 setup_params = setup(
   name='gdtw',
-  version='1.0.4',
+  version='1.0.5',
   author='Dave Deriso',
   author_email='dderiso@alumni.stanford.edu',
   description='General Dynamic Time Warping',
