@@ -1,5 +1,8 @@
 # GDTW
 
+GDTW is a Python/C++ library that performs dynamic time warping. 
+It is based on a paper by Dave Deriso and Stephen Boyd.
+
 ## Installation
 
 ```
