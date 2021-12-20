@@ -1,5 +1,16 @@
 # GDTW
 
+## Installation
+
+```
+pip install gdtw
+```
+
+## Documentation
+
+For full documentation, including a quick-start tutorial, please see [https://dderiso.github.io/gdtw](https://dderiso.github.io/gdtw).
+
+
 ## Citing 
 
 ```
@@ -11,6 +22,3 @@
 }
 ```
 
-## Documentation
-
-Please see [https://dderiso.github.io/gdtw](https://dderiso.github.io/gdtw) for full documentation and installation instructions.
