@@ -14,9 +14,9 @@ pip install gdtw
 For full documentation, including a quick-start tutorial, please see [https://dderiso.github.io/gdtw](https://dderiso.github.io/gdtw).
 
 
-## Paper
+## Our Paper
 
-For arXiv pre-print mauscript, please see [https://arxiv.org/pdf/1905.12893.pdf](https://arxiv.org/pdf/1905.12893.pdf).
+For the paper, please see [https://web.stanford.edu/~boyd/papers/gdtw.html](https://web.stanford.edu/~boyd/papers/gdtw.html).
 
 ## Citing
 
