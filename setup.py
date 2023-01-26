@@ -1,5 +1,17 @@
-# -*- coding: utf-8 -*-
+# SPDX-License-Identifier: Apache-2.0
+# 
+# Copyright (C) 2019-2023 Dave Deriso <dderiso@alumni.stanford.edu>
+# Copyright (C) 2019-2023 Stephen Boyd
+# 
+# GDTW is a Python/C++ library that performs dynamic time warping.
+# It is based on a paper by Dave Deriso and Stephen Boyd.
+# GDTW improves upon other methods (such as the original DTW, ShapeDTW, and FastDTW) by introducing regularization, 
+# which obviates the need for pre-processing, and cross-validation for choosing optimal regularization hyper-parameters. 
+# 
+# Visit: https://github.com/dderiso/gdtw (source)
+# Visit: https://dderiso.github.io/gdtw  (docs)
 
+# -*- coding: utf-8 -*-
 from setuptools import setup, Extension
 import numpy as np
 import os, sys
@@ -14,8 +26,6 @@ if "CC" in os.environ:
   print("*"*110)
 
 
-# We have to extend BuildExt to access compiler flags, etc
-# See distutils/ccompiler.py (Yes, the new setuptools still depends on the old distutils.)
 from setuptools.command.build_ext import build_ext
 class BuildExt(build_ext):
   def build_extensions(self):
@@ -23,8 +33,8 @@ class BuildExt(build_ext):
     if sys.platform == 'darwin':
       if os.system("which clang")==0:
         cc = "clang"
-        self.compiler.compiler_so.append('-stdlib=libc++')
-        self.compiler.compiler_so.remove('-Wstrict-prototypes') # gets rid of a useless warning
+        # self.compiler.compiler_so.append('-stdlib=libc++')
+        self.compiler.compiler_so.remove('-Wstrict-prototypes')
     elif sys.platform == 'linux':
       cc = "g++"
     if cc is not None:
@@ -37,8 +47,12 @@ class BuildExt(build_ext):
 cpp_module = Extension(
   'gdtw/gdtwcpp', 
   sources=['gdtw/gdtw_solver.cpp','gdtw/utils.cpp','gdtw/numpyobject.cpp'],
-  include_dirs=[np.get_include()],
-  extra_compile_args=["-Ofast", "-Wall", "-std=c++11"],
+  include_dirs=[
+    "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/i386/", 
+    "/Library/Developer/CommandLineTools/SDKs/MacOSX11.sdk/usr/include/sys/",
+    np.get_include()
+  ],
+  extra_compile_args=["-Ofast", "-Wall"], # "-std=c++11"
   language="c++11"
 )
 
