@@ -1,4 +1,4 @@
-sudo -H /opt/anaconda3/bin/pip uninstall gdtw
+sudo -H pip uninstall gdtw
 
 rm -rf build
 python setup.py clean build install --force

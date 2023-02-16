@@ -127,6 +127,7 @@ class GDTW:
         # We apply the processed loss function.
         #   the default is "L2" => self.D = (X-Y)**2
         self.D = self.loss_f(X-Y) 
+        # self.D = (X-Y)**2
         
         # Finally, we'll report the time it took to do all of this.
         if self.verbose > 0: print(f"Pre-computed loss: {time.time() - time_start :03.4f} sec")
