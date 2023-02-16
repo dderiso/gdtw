@@ -29,13 +29,16 @@ if "CC" in os.environ:
 from setuptools.command.build_ext import build_ext
 class BuildExt(build_ext):
   def build_extensions(self):
+    cpp_compiler = None
     if "CC" in os.environ:
-      cc = os.environ["CC"]
-      self.compiler.compiler_so[0] = cc
-      self.compiler.compiler[0] = cc
-      self.compiler.linker_so[0] = cc
+      cpp_compiler = os.environ["CC"]
+    elif sys.platform == "linux":
+      cpp_compiler = "g++"
+    if cpp_compiler is not None:
+      self.compiler.compiler_so[0] = cpp_compiler
+      self.compiler.compiler[0]    = cpp_compiler
+      self.compiler.linker_so[0]   = cpp_compiler
     super(BuildExt, self).build_extensions()
-
 
 cpp_module = Extension(
   'gdtw/gdtwcpp', 
@@ -43,9 +46,10 @@ cpp_module = Extension(
   include_dirs=[
     np.get_include()
   ],
-  extra_compile_args=["-Ofast", "-Wall"], # "-std=c++11"
+  extra_compile_args=["-Ofast", "-Wall"],
   language="c++11"
 )
+
 
 with open("readme.md","r") as f:
   long_description = f.read();

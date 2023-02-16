@@ -9,6 +9,8 @@ phi, x_tau, f_tau, g = gdtw.warp(x(t), y(t))
 
 x_tau = list(x_tau.astype(np.float32))
 
+print(x_tau)
+
 import pathlib
 path = pathlib.Path(__file__).parent.resolve()
 
