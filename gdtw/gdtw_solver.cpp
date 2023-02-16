@@ -94,7 +94,7 @@ static PyObject* gdtwcpp_solve(PyObject *self, PyObject *args){
     // graph dimensions are based on Tau \in R^{NxM}.
     const int N          = (int) Tau.shape[0];
     const int M          = (int) Tau.shape[1];
-    const int j_center   = (M-1)/2 + 1; // M is always OOOOOddddpiO
+    const int j_center   = (M-1)/2 + 1; // M is always odd
 
     // outputs
     double* tau      = (double*) PyArray_DATA(tau_obj);
