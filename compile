@@ -1,7 +1,0 @@
-clang \
--arch x86_64 \
--I/Users/dderiso/anaconda3/lib/python3.7/site-packages/numpy/core/include \
--I/Users/dderiso/anaconda3/include/python3.7m \
--c gdtw/gdtw_solver.cpp \
--o build/temp.macosx-10.9-x86_64-3.7/gdtw/gdtw_solver.o \
--Wall
