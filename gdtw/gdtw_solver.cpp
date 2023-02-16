@@ -1,25 +1,26 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  * 
- * Copyright (C) 2019-2023 Dave Deriso <dderiso@alumni.stanford.edu>
+ * Copyright (C) 2019-2023 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
  * Copyright (C) 2019-2023 Stephen Boyd
  * 
  * GDTW is a Python/C++ library that performs dynamic time warping.
- * It is based on a paper by Dave Deriso and Stephen Boyd.
  * GDTW improves upon other methods (such as the original DTW, ShapeDTW, and FastDTW) by introducing regularization, 
  * which obviates the need for pre-processing, and cross-validation for choosing optimal regularization hyper-parameters. 
  * 
- * Visit: https://github.com/dderiso/gdtw (source)
- * Visit: https://dderiso.github.io/gdtw  (docs) 
+ * Paper: https://rdcu.be/cT5dD
+ * Source: https://github.com/dderiso/gdtw
+ * Docs: https://dderiso.github.io/gdtw
  */
 
-#include <Python.h>
+
 #include <vector>
 #include <numeric>
 #include <math.h>
 #include <iterator>
 #include <iostream>
 #include <cfloat>
+#include <Python.h>
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/ndarrayobject.h>
@@ -57,10 +58,8 @@ double R_inst(const double& x, const double& s_min, const double& s_max,
 }
 
 static PyObject* gdtwcpp_solve(PyObject *self, PyObject *args){
-
     // shared pointers with Python
-    PyObject *R_cum_obj, *R_inst_obj, 
-             *t_obj, *Tau_obj, *D_obj;
+    PyObject *R_cum_obj, *R_inst_obj, *t_obj, *Tau_obj, *D_obj;
     PyArrayObject *tau_obj, *path_obj;
     PyFloatObject *f_of_tau_obj;
 
@@ -197,8 +196,7 @@ static PyObject *gdtwcpp_test(PyObject *self, PyObject *args){
 }
 
 static PyMethodDef gdtwcpp_methods[] = {
-    {"solve",   gdtwcpp_solve,  METH_VARARGS, 
-        "Runs the Viterbi algorithm and graph computation together."},
+    {"solve",   gdtwcpp_solve,  METH_VARARGS, "Runs the Viterbi algorithm and graph computation together."},
     {"test",    gdtwcpp_test,   METH_VARARGS, "Tests that the library loaded."},
     {NULL,      NULL}       /* sentinel */
 };
@@ -207,8 +205,7 @@ static struct PyModuleDef gdtwcpp_module = {
     PyModuleDef_HEAD_INIT,
     "gdtwcpp",   /* name of module */
     "General Dynamic Time Warping, C++ Library", /* module documentation, may be NULL */
-    -1,       /* size of per-interpreter state of the module,
-                 or -1 if the module keeps state in global variables. */
+    -1,          /* size of per-interpreter state of the module, or -1 if the module keeps state in global variables. */
     gdtwcpp_methods
 };
 
@@ -230,5 +227,3 @@ int main(int argc, char *argv[]){
     PyMem_RawFree(program);
     return 0;
 }
-
-

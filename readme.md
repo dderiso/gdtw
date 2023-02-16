@@ -18,16 +18,17 @@ For full documentation, including a quick-start tutorial, please see [https://dd
 
 ## Our Paper
 
-For the paper, please see [https://web.stanford.edu/~boyd/papers/gdtw.html](https://web.stanford.edu/~boyd/papers/gdtw.html).
+Please see [the published article](https://rdcu.be/cT5dD).
 
 ## Citing
 
 ```
-@article{deriso2019general,
+@article{deriso2022general,
   title={A general optimization framework for dynamic time warping},
   author={Deriso, Dave and Boyd, Stephen},
-  journal={arXiv preprint arXiv:1905.12893},
-  year={2019}
+  journal={Optimization and Engineering},
+  pages={1--22},
+  year={2022},
+  publisher={Springer}
 }
 ```
-

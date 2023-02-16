@@ -1,15 +1,15 @@
 # SPDX-License-Identifier: Apache-2.0
 # 
-# Copyright (C) 2019-2023 Dave Deriso <dderiso@alumni.stanford.edu>
+# Copyright (C) 2019-2023 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
 # Copyright (C) 2019-2023 Stephen Boyd
 # 
 # GDTW is a Python/C++ library that performs dynamic time warping.
-# It is based on a paper by Dave Deriso and Stephen Boyd.
 # GDTW improves upon other methods (such as the original DTW, ShapeDTW, and FastDTW) by introducing regularization, 
 # which obviates the need for pre-processing, and cross-validation for choosing optimal regularization hyper-parameters. 
 # 
-# Visit: https://github.com/dderiso/gdtw (source)
-# Visit: https://dderiso.github.io/gdtw  (docs)
+# Paper: https://rdcu.be/cT5dD
+# Source: https://github.com/dderiso/gdtw
+# Docs: https://dderiso.github.io/gdtw
 
 # -*- coding: utf-8 -*-
 from setuptools import setup, Extension
@@ -29,32 +29,27 @@ if "CC" in os.environ:
 from setuptools.command.build_ext import build_ext
 class BuildExt(build_ext):
   def build_extensions(self):
-    cc = os.environ["CC"] if "CC" in os.environ else None
-    if sys.platform == 'darwin':
-      if os.system("which clang")==0:
-        cc = "clang"
-        # self.compiler.compiler_so.append('-stdlib=libc++')
-        self.compiler.compiler_so.remove('-Wstrict-prototypes')
-    elif sys.platform == 'linux':
-      cc = "g++"
-    if cc is not None:
-      self.compiler.compiler_so[0] = cc
-      self.compiler.compiler[0] = cc
-      self.compiler.linker_so[0] = cc
+    cpp_compiler = None
+    if "CC" in os.environ:
+      cpp_compiler = os.environ["CC"]
+    elif sys.platform == "linux":
+      cpp_compiler = "g++"
+    if cpp_compiler is not None:
+      self.compiler.compiler_so[0] = cpp_compiler
+      self.compiler.compiler[0]    = cpp_compiler
+      self.compiler.linker_so[0]   = cpp_compiler
     super(BuildExt, self).build_extensions()
-
 
 cpp_module = Extension(
   'gdtw/gdtwcpp', 
   sources=['gdtw/gdtw_solver.cpp','gdtw/utils.cpp','gdtw/numpyobject.cpp'],
   include_dirs=[
-    "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/i386/", 
-    "/Library/Developer/CommandLineTools/SDKs/MacOSX11.sdk/usr/include/sys/",
     np.get_include()
   ],
-  extra_compile_args=["-Ofast", "-Wall"], # "-std=c++11"
+  extra_compile_args=["-Ofast", "-Wall"],
   language="c++11"
 )
+
 
 with open("readme.md","r") as f:
   long_description = f.read();

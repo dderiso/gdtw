@@ -1,15 +1,16 @@
 # SPDX-License-Identifier: Apache-2.0
 # 
-# Copyright (C) 2019-2023 Dave Deriso <dderiso@alumni.stanford.edu>
+# Copyright (C) 2019-2023 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
 # Copyright (C) 2019-2023 Stephen Boyd
 # 
 # GDTW is a Python/C++ library that performs dynamic time warping.
-# It is based on a paper by Dave Deriso and Stephen Boyd.
 # GDTW improves upon other methods (such as the original DTW, ShapeDTW, and FastDTW) by introducing regularization, 
 # which obviates the need for pre-processing, and cross-validation for choosing optimal regularization hyper-parameters. 
 # 
-# Visit: https://github.com/dderiso/gdtw (source)
-# Visit: https://dderiso.github.io/gdtw  (docs)
+# Paper: https://rdcu.be/cT5dD
+# Source: https://github.com/dderiso/gdtw
+# Docs: https://dderiso.github.io/gdtw
+
 
 
 import numpy as np
@@ -124,7 +125,9 @@ class GDTW:
         Y = np.tile(self.y_f(self.t).reshape((self.N,1)),(1,self.M))
         
         # We apply the processed loss function.
-        self.D = (X-Y)**2
+        #   the default is "L2" => self.D = (X-Y)**2
+        self.D = self.loss_f(X-Y) 
+        # self.D = (X-Y)**2
         
         # Finally, we'll report the time it took to do all of this.
         if self.verbose > 0: print(f"Pre-computed loss: {time.time() - time_start :03.4f} sec")

@@ -1,16 +1,16 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  * 
- * Copyright (C) 2019-2023 Dave Deriso <dderiso@alumni.stanford.edu>
+ * Copyright (C) 2019-2023 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
  * Copyright (C) 2019-2023 Stephen Boyd
  * 
  * GDTW is a Python/C++ library that performs dynamic time warping.
- * It is based on a paper by Dave Deriso and Stephen Boyd.
  * GDTW improves upon other methods (such as the original DTW, ShapeDTW, and FastDTW) by introducing regularization, 
  * which obviates the need for pre-processing, and cross-validation for choosing optimal regularization hyper-parameters. 
  * 
- * Visit: https://github.com/dderiso/gdtw (source)
- * Visit: https://dderiso.github.io/gdtw  (docs) 
+ * Paper: https://rdcu.be/cT5dD
+ * Source: https://github.com/dderiso/gdtw
+ * Docs: https://dderiso.github.io/gdtw
  */
 
 !function(n){var e={};function t(o){if(e[o])return e[o].exports;var a=e[o]={i:o,l:!1,exports:{}};return n[o].call(a.exports,a,a.exports,t),a.l=!0,a.exports}t.m=n,t.c=e,t.d=function(n,e,o){t.o(n,e)||Object.defineProperty(n,e,{enumerable:!0,get:o})},t.r=function(n){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(n,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(n,"__esModule",{value:!0})},t.t=function(n,e){if(1&e&&(n=t(n)),8&e)return n;if(4&e&&"object"==typeof n&&n&&n.__esModule)return n;var o=Object.create(null);if(t.r(o),Object.defineProperty(o,"default",{enumerable:!0,value:n}),2&e&&"string"!=typeof n)for(var a in n)t.d(o,a,function(e){return n[e]}.bind(null,a));return o},t.n=function(n){var e=n&&n.__esModule?function(){return n.default}:function(){return n};return t.d(e,"a",e),e},t.o=function(n,e){return Object.prototype.hasOwnProperty.call(n,e)},t.p="",t(t.s=5)}([function(n,e,t){var o;
