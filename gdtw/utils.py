@@ -28,7 +28,7 @@ def process_function(f):
     # Determine if the function is given as a string (indicates that the user wants a C++ function),
     if isinstance(f, str):
         # if so convert the string into a function.
-        if   f == "L1": f_out = lambda x_,axis=1: np.abs(x) # np.linalg.norm(x_,ord=1,axis=axis)
+        if   f == "L1": f_out = lambda x_,axis=1: np.abs(x_) # np.linalg.norm(x_,ord=1,axis=axis)
         elif f == "L2": f_out = lambda x_,axis=1: x_**2     # np.linalg.norm(x_,ord=2,axis=axis)**2
         else:
             raise ValueError("Error: String is not recognized by this API. You can use one of the built-in C function by passing a string such as 'L1' or 'L2'.")
