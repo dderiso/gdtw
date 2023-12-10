@@ -84,15 +84,16 @@ Docs: https://dderiso.github.io/gdtw
             
             <div class="col-md-7">
                 <h2>The Dynamic Time Warping Problem</h2>
-                <p>The goal of <b>dynamic time warping</b> (DTW) is to find a time warping function that transforms, or "warps," time in order to approximately align two signals together.
-                    There are a diversity of applications for DTW, and a few examples are illustrated in the demonstration below.
-                    Despite its popularity, available DTW methods suffer from several drawbacks that many researchers have attempted to address over the years, including
-                        susceptibility to local minima that results in poor alignments and
-                        sharp irregularities in the warping function known as singularities.
-                    Many pre- or post-processing strategies have been proposed to ameliorate these issues, but no general solution has been demonstrated until now.
-                    Our formulation solves these issues by introducing penalty terms in the objective that explicitly minimize roughness and over-fitting.
-                    Our approach results in smoother warping functions without requiring any pre-processing.
-                    We offer a linear time method for solving warping problems, implemented as an open-source C++ and Python package.
+                <p>
+                    The goal of <b>dynamic time warping</b> (DTW) is to find a time warping function that transforms, or "warps," time in order to approximately align two signals.
+                    DTW has various applications, some of which are demonstrated in the <a href="#demo">Interactive Demo</a> below.
+                    Existing methods are often slow, with quadratic time complexity, and suffer from inaccuracies falling into two categories:
+                        susceptibility to local minima leading to poor alignments, and/or
+                        sharp irregularities in the warping function, known as "singularities."
+                    Many methods have attempted to address these issues in an <i>ad-hoc</i> manner, usually through hand-tuned pre- or post-processing steps.
+                    Our method is the first general solution that rapidly —in linear time—
+                    produces a smooth warping function without the need for any pre- or post-processing steps.
+                    Additionally, we offer a fast open-source C++ and Python package under a generous Apache license, comprehensive documentation, and several demos.
                     <!-- We also present a novel dataset of time-warping functions, and compare our performance to that of existing approaches. -->
                 </p>
 
