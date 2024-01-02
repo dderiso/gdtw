@@ -42,7 +42,7 @@ class BuildExt(build_ext):
 
 cpp_module = Extension(
   'gdtw/gdtwcpp', 
-  sources=['gdtw/gdtw_solver.cpp','gdtw/utils.cpp'], #,'gdtw/numpyobject.cpp'],
+  sources=['gdtw/gdtw_solver.cpp'],
   include_dirs=[
     np.get_include()
   ],

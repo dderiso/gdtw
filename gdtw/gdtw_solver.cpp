@@ -31,14 +31,37 @@
 #include "numpyobject.hpp"
 
 // boundary checks and norms
-#include "utils.hpp"
+
+// get type of object (function or string)
+int get_function_type(PyObject*& obj){
+    int type = -1; // no match
+    
+    // Python function
+    if(PyCallable_Check(obj)){ type = 0; }
+
+    // C++ Function
+    else if(PyObject_TypeCheck(obj, &PyUnicode_Type)){
+             if(PyUnicode_CompareWithASCIIString(obj,"L1") == 0){ type = 1; }
+        else if(PyUnicode_CompareWithASCIIString(obj,"L2") == 0){ type = 2; }
+        else { printf("gdtw_solver.cpp: Error in get_function_type: Unknown string \"%s\"\n", PyUnicode_AsUTF8(obj)); }
+    }
+    return type;
+}
+
+
+// bound checks
+#define DOUBLE_PRECISION_EPSILON 1e-10 // source of subtle errors -- really test this before changing
+
+bool out_of_bounds(const double& x, const double& lower, const double& upper){
+    return (x < (lower - DOUBLE_PRECISION_EPSILON)) || (x > (upper + DOUBLE_PRECISION_EPSILON));
+}
 
 // penalty functions
 double R_cum(const double& x, PyObject*& obj, const int& f_type){
     switch(f_type){
         case 0:  return PyFloat_AsDouble(PyObject_CallFunction(obj,"f",x));
-        case 1:  return L1(x);
-        case 2:  return L2(x);
+        case 1:  return abs(x); // L1
+        case 2:  return x*x;  // L2
         default: return (double)NULL;
     }
 }
@@ -51,8 +74,8 @@ double R_inst(const double& x, const double& s_min, const double& s_max,
 
     switch(f_type){
         case 0:  return PyFloat_AsDouble(PyObject_CallFunction(obj,"f",x));
-        case 1:  return L1(x);
-        case 2:  return L2(x);
+        case 1:  return abs(x); // L1
+        case 2:  return x*x;  // L2
         default: return (double)NULL;
     }
 }
@@ -112,8 +135,8 @@ static PyObject* gdtwcpp_solve(PyObject *self, PyObject *args){
     #define p(i,j)    *(int*)PyArray_GETPTR2(p,i,j)
 
     // functional types
-    const int r_cum_type  = f_type(R_cum_obj);
-    const int r_inst_type = f_type(R_inst_obj);
+    const int r_cum_type  = get_function_type(R_cum_obj);
+    const int r_inst_type = get_function_type(R_inst_obj);
 
     // readability: hide the last 2 args, which are used for switching between C++ and Python functionals
     #define R_cum(x)       R_cum(x,               R_cum_obj,  r_cum_type)
@@ -137,7 +160,7 @@ static PyObject* gdtwcpp_solve(PyObject *self, PyObject *args){
     }
 
     // fill i=1 ... N-1
-    int n_paths = 0;
+    // int n_paths = 0;
     double delta_t, slope, e_ijk, total_;
     for (i=0; i<N-1; i++){ // i=0 ... N-2 ( f(i+1,k) is filled )
         delta_t = t[i+1] - t[i];
@@ -149,7 +172,7 @@ static PyObject* gdtwcpp_solve(PyObject *self, PyObject *args){
                 if (total_ < f(i+1,k)){
                     f(i+1,k) = total_; // min
                     p(i+1,k) = j; // argmin
-                    n_paths = 0;
+                    // n_paths = 0;
                 }
             }
         }
@@ -221,7 +244,8 @@ int main(int argc, char *argv[]){
         exit(1);
     }
     PyImport_AppendInittab("gdtwcpp", PyInit_gdtwcpp);
-    Py_SetProgramName(program);
+    // Py_SetProgramName is deprecated
+    // Py_SetProgramName(program);
     Py_Initialize();
     PyImport_ImportModule("gdtwcpp");
     PyMem_RawFree(program);
