@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # 
-# Copyright (C) 2019-2023 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
-# Copyright (C) 2019-2023 Stephen Boyd
+# Copyright (C) 2019-2024 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
+# Copyright (C) 2019-2024 Stephen Boyd
 # 
 # GDTW is a Python/C++ library that performs dynamic time warping.
 # GDTW improves upon other methods (such as the original DTW, ShapeDTW, and FastDTW) by introducing regularization, 
@@ -15,7 +15,6 @@
 from setuptools import setup, Extension
 import numpy as np
 import os, sys
-
 
 # Check to see if there's a prefered compiler on this machine
 if "CC" in os.environ:
@@ -49,7 +48,6 @@ cpp_module = Extension(
   extra_compile_args=["-Ofast", "-Wall"],
   language="c++11"
 )
-
 
 with open("readme.md","r") as f:
   long_description = f.read();
