@@ -80,7 +80,7 @@ class GDTW:
 
         # solution
         self.tau          = np.zeros( self.N,        dtype=np.double) # phi is continuous
-        self.path         = np.zeros( self.N,        dtype=np.int)    # path is discrete
+        self.path         = np.zeros( self.N,        dtype=int)    # path is discrete
         self.f_tau        = np.double(0.0)
         self.phi          = lambda t_: np.interp(t_, self.t, self.tau)
 
@@ -166,7 +166,7 @@ class GDTW:
         return self
     
     def iterate(self):
-        for self.iteration in np.arange(self.max_iters).astype(np.int):
+        for self.iteration in np.arange(self.max_iters).astype(int):
             # compute graph and solve
             self.compute_taus()
             self.compute_dist_matrix()
@@ -219,7 +219,7 @@ class GDTW:
                 raise ValueError(f"Time is multi-dimensional; we can only accept a 1-D sequence.")
             
             # If we're not given an N, we'll use the length of time as our N
-            if not isinstance(self.N, int): # works for both int and np.int
+            if not isinstance(self.N, int):
                 self.N = self.t.shape[0]
                 # and alert the user.
                 if self.verbose > 1:
@@ -280,7 +280,7 @@ class GDTW:
         # If M is not given or is unreasonably large,
         if not isinstance(self.M, int) or self.M >= self.N:
             # we'll set it to the smaller of either the default size or a little over half of N,
-            self.M = np.min((self.N*.55, self.M_max)).astype(np.int)
+            self.M = np.min((self.N*.55, self.M_max)).astype(int)
             # and alert the user of this choice.
             if self.verbose > 1:
                 print(f"Setting M={self.M}")

@@ -24,48 +24,83 @@
 #include <numpy/npy_math.h>
 #include <iostream>
 
+#define NUMPY_OBJECT_NONE       0
+#define NUMPY_OBJECT_FUNCTION   1
+#define NUMPY_OBJECT_ARRAY      2
+
 class NumpyObject{
-	private:
-		PyObject* obj;
-		int NONE = -1;
-		int FUNCTION = 0;
-		int ARRAY = 1;
-		int verbose;
-	public:
-		int type;
-		int ndims;
-		long* shape;
-		double* data;
-		long* strides;
-		double err = (double)NULL;
-		int error = 0;
-		char name;
+	
+private:
+	int verbosity;
+	PyObject* obj;
 
-		NumpyObject();
-		NumpyObject(PyObject* obj_, char name_, const int& verbose_);
-		~NumpyObject();
+public:
+	int type;
+	int ndims;
+	long* shape;
+	double* data;
+	long* strides;
+	char name;
 
-		void print();
+	NumpyObject() : verbosity(0), obj(nullptr), type(NUMPY_OBJECT_NONE), name('\0') {}
 
-		int& get_type();
-		void get_array_attributes();
-		bool is_array();
+	NumpyObject(PyObject* obj_, char name_, const int& verbosity_) : verbosity(verbosity_), obj(obj_), name(name_) {
+		type = get_type();
+		Py_INCREF(obj);
+		if(type == NUMPY_OBJECT_ARRAY) get_array_attributes();
+		if(verbosity > 2)   print();
+	}
 
-		double& operator[] (const int& i) {
-			return data[i];
+	~NumpyObject(){
+		Py_XDECREF(obj);
+	}
+
+	int get_type(){
+		if(obj == Py_None)        return NUMPY_OBJECT_NONE;
+		if(PyCallable_Check(obj)) return NUMPY_OBJECT_FUNCTION;
+		if(PyArray_Check(obj))    return NUMPY_OBJECT_ARRAY;
+		
+		throw std::runtime_error("!!! If you see this message, create a github issue (https://github.com/dderiso/gdtw/issues) and paste the below along with the inputs you called gdtw solver with: NumpyObject.cpp: Unhandled type for NumpyObject: " + std::string(Py_TYPE(obj)->tp_name));
+	}
+
+	bool is_array() const {
+		return type == NUMPY_OBJECT_ARRAY;
+	}
+
+	void get_array_attributes(){
+		ndims   = PyArray_NDIM((PyArrayObject*) obj);
+		shape   = PyArray_SHAPE((PyArrayObject*) obj);
+		data    = (double*)PyArray_DATA((PyArrayObject*) obj);
+		strides = PyArray_STRIDES((PyArrayObject*) obj);
+	}
+
+	void print() const {
+		printf("Object is type %i \n", type);
+		if(type == NUMPY_OBJECT_ARRAY){
+			printf("Object is %i dimensional \n", ndims);
+			for (int i=0; i < ndims; i++){
+				printf("  Dimension %i has %i elements \n", i, (int)shape[i]);
+			}
 		}
-		double& operator() (const int& i) {
-			return data[i];
-		}
-		double& operator() (const int& i, const int& j) {
-			return *(double*)PyArray_GETPTR2((PyArrayObject*) obj,i,j);
-			// return data + i*strides[0] + j*strides[1];
-		}
+	}
 
-		double& operator() (const int& i, const int& j, const int& k) {
-			return *(double*)PyArray_GETPTR3((PyArrayObject*) obj,i,j,k);
-			// return data + i*strides[0] + j*strides[1] + k*strides[2];
-		}
+	double& operator[] (const int& i) {
+		return data[i];
+	}
+	
+	double& operator() (const int& i) {
+		return data[i];
+	}
+
+	double& operator() (const int& i, const int& j) {
+		return *(double*)PyArray_GETPTR2((PyArrayObject*) obj,i,j);
+		// return data + i*strides[0] + j*strides[1];
+	}
+
+	double& operator() (const int& i, const int& j, const int& k) {
+		return *(double*)PyArray_GETPTR3((PyArrayObject*) obj,i,j,k);
+		// return data + i*strides[0] + j*strides[1] + k*strides[2];
+	}
 };
 
 
