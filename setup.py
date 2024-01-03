@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # 
-# Copyright (C) 2019-2023 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
-# Copyright (C) 2019-2023 Stephen Boyd
+# Copyright (C) 2019-2024 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
+# Copyright (C) 2019-2024 Stephen Boyd
 # 
 # GDTW is a Python/C++ library that performs dynamic time warping.
 # GDTW improves upon other methods (such as the original DTW, ShapeDTW, and FastDTW) by introducing regularization, 
@@ -16,7 +16,6 @@ from setuptools import setup, Extension
 import numpy as np
 import os, sys
 
-
 # Check to see if there's a prefered compiler on this machine
 if "CC" in os.environ:
   print("*"*110)
@@ -25,31 +24,36 @@ if "CC" in os.environ:
   print("If compilation fails, remove this variable from your environment by typing 'unset CC', and try running setup again.")
   print("*"*110)
 
-
 from setuptools.command.build_ext import build_ext
+
 class BuildExt(build_ext):
   def build_extensions(self):
-    cpp_compiler = None
+    cc = None
     if "CC" in os.environ:
-      cpp_compiler = os.environ["CC"]
+      cc = os.environ["CC"]
+    elif sys.platform == 'darwin':
+      if os.system("which g++")==0:
+        cc = "g++"
     elif sys.platform == "linux":
       cpp_compiler = "g++"
-    if cpp_compiler is not None:
-      self.compiler.compiler_so[0] = cpp_compiler
-      self.compiler.compiler[0]    = cpp_compiler
-      self.compiler.linker_so[0]   = cpp_compiler
+    if cc is not None:
+      self.compiler.compiler_so[0] = cc
+      self.compiler.compiler[0]    = cc
+      self.compiler.linker_so[0]   = cc
+
+      self.compiler.compiler_so.append('-stdlib=libc++')
+      self.compiler.compiler.append('-stdlib=libc++')
     super(BuildExt, self).build_extensions()
 
 cpp_module = Extension(
   'gdtw/gdtwcpp', 
-  sources=['gdtw/gdtw_solver.cpp','gdtw/utils.cpp','gdtw/numpyobject.cpp'],
+  sources=['gdtw/gdtw_solver.cpp'],
   include_dirs=[
     np.get_include()
   ],
-  extra_compile_args=["-Ofast", "-Wall"],
+  extra_compile_args=["-Ofast", "-Wall", "-std=c++11", "-flto", "-march=native"],
   language="c++11"
 )
-
 
 with open("readme.md","r") as f:
   long_description = f.read();
