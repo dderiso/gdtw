@@ -1,0 +1,21 @@
+name: Build & Deploy Manylinux Wheel
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install and test
+      run: |
+        pwd
+        ls -al
+        python -m pip install --upgrade pip && pip install numpy gdtw
+        python /github/workspace/test/test.py
