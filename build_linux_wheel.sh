@@ -4,17 +4,17 @@
 set -e 
 
 # manylinux2014_x86_64
-# yum install -y python3 python3-devel python3-pip
-# python3 -m pip install --upgrade pip
-# python3 -m pip install setuptools wheel auditwheel
-# python3 -m pip install numpy
-# python3 /github/workspace/setup.py bdist_wheel
+yum install -y python3 python3-devel python3-pip
+python3 -m pip install --upgrade pip
+python3 -m pip install setuptools wheel auditwheel
+python3 -m pip install numpy
+python3 /github/workspace/setup.py bdist_wheel
 
-yum install -y python3.8 python3.8-devel python3.8-pip
-python3.8 -m pip install --upgrade pip
-python3.8 -m pip install setuptools wheel auditwheel
-python3.8 -m pip install numpy
-python3.8 /github/workspace/setup.py bdist_wheel
+# yum install -y python3.8 python3.8-devel python3.8-pip
+# python3.8 -m pip install --upgrade pip
+# python3.8 -m pip install setuptools wheel auditwheel
+# python3.8 -m pip install numpy
+# python3.8 /github/workspace/setup.py bdist_wheel
 
 # manylinux1_x86_64
 # yum install -y python3 
