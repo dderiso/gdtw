@@ -35,6 +35,6 @@ Please see [the published article](https://rdcu.be/cT5dD).
 
 ## Linux
 
-Linmited Linux support. Currently supports Python 3.6 on: CentOS 7 rh-python38, CentOS 8 python38, Fedora 32+, Mageia 8+, openSUSE 15.3+, Photon OS 4.0+ (3.0+ with updates), Ubuntu 20.04+
+Limited Linux support. Currently supports Python 3.6 on: CentOS 7 rh-python38, CentOS 8 python38, Fedora 32+, Mageia 8+, openSUSE 15.3+, Photon OS 4.0+ (3.0+ with updates), Ubuntu 20.04+
 
 See [manylinux](https://github.com/pypa/manylinux) for latest list of versions supported under `manylinux2014`. 
