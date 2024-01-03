@@ -32,17 +32,20 @@ class BuildExt(build_ext):
     if "CC" in os.environ:
       cc = os.environ["CC"]
     elif sys.platform == 'darwin':
-      if os.system("which g++")==0:
-        cc = "g++"
+      cc = "g++"
+      self.compiler.compiler_so.append('-stdlib=libc++')
+      self.compiler.compiler.append('-stdlib=libc++')
+      # self.compiler.compiler_so.append('-target x86_64-apple-macos')
+      # self.compiler.compiler.append('-target x86_64-apple-macos')
     elif sys.platform == "linux":
-      cpp_compiler = "g++"
+      cc = "g++"
+      if '-Wstrict-prototypes' in self.compiler.compiler_so:
+        self.compiler.compiler_so.remove('-Wstrict-prototypes') # gets rid of a useless warning
+      self.compiler.compiler_so.append('-Wno-maybe-uninitialized')
     if cc is not None:
       self.compiler.compiler_so[0] = cc
       self.compiler.compiler[0]    = cc
       self.compiler.linker_so[0]   = cc
-
-      self.compiler.compiler_so.append('-stdlib=libc++')
-      self.compiler.compiler.append('-stdlib=libc++')
     super(BuildExt, self).build_extensions()
 
 cpp_module = Extension(
@@ -51,7 +54,7 @@ cpp_module = Extension(
   include_dirs=[
     np.get_include()
   ],
-  extra_compile_args=["-Ofast", "-Wall", "-std=c++11", "-flto", "-march=native"],
+  extra_compile_args=["-Ofast", "-Wall", "-std=c++11"],# "-flto"], # "-target", "x86_64-apple-macos"
   language="c++11"
 )
 
@@ -60,7 +63,7 @@ with open("readme.md","r") as f:
 
 setup_params = setup(
   name='gdtw',
-  version='1.0.7',
+  version='1.1.1',
   author='Dave Deriso',
   author_email='dderiso@alumni.stanford.edu',
   description='General Dynamic Time Warping',

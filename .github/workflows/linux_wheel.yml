@@ -1,0 +1,41 @@
+name: Build & Deploy Manylinux Wheel
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+      with:
+        repository: dderiso/gdtw
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip && pip install setuptools wheel twine auditwheel
+
+    - name: Build Wheel in Manylinux Environment
+      uses: docker://quay.io/pypa/manylinux2014_x86_64:latest
+      # uses: docker://quay.io/pypa/manylinux1_x86_64:latest
+      with:
+        args: |
+          bash /github/workspace/build_linux_wheel.sh
+        
+    - name: Publish Wheel
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        python3 -m pip install twine
+        ls -al dist/
+        latest_wheel=$(ls -t dist/*manylinux*.whl | head -1)
+        echo $latest_wheel
+        python3 -m twine upload $latest_wheel
