@@ -13,10 +13,9 @@
  * Docs: https://dderiso.github.io/gdtw
  */
 
-
 #include <vector>
 #include <numeric>
-#include <math.h>
+#include <cmath>
 #include <iterator>
 #include <iostream>
 #include <cfloat>
@@ -31,58 +30,24 @@
 #include "numpyobject.hpp"
 
 // boundary checks and norms
+#define DOUBLE_PRECISION_EPSILON 1e-10 // source of subtle errors -- really test this before changing
+#define OUT_OF_BOUNDS(x, lower, upper) ((x < (lower - DOUBLE_PRECISION_EPSILON)) || (x > (upper + DOUBLE_PRECISION_EPSILON)))
 
 // get type of object (function or string)
 int get_function_type(PyObject*& obj){
-    int type = -1; // no match
-    
     // Python function
-    if(PyCallable_Check(obj)){ type = 0; }
+    if(PyCallable_Check(obj)) return 2;
 
     // C++ Function
-    else if(PyObject_TypeCheck(obj, &PyUnicode_Type)){
-             if(PyUnicode_CompareWithASCIIString(obj,"L1") == 0){ type = 1; }
-        else if(PyUnicode_CompareWithASCIIString(obj,"L2") == 0){ type = 2; }
-        else { printf("gdtw_solver.cpp: Error in get_function_type: Unknown string \"%s\"\n", PyUnicode_AsUTF8(obj)); }
-    }
-    return type;
-}
-
-
-// bound checks
-#define DOUBLE_PRECISION_EPSILON 1e-10 // source of subtle errors -- really test this before changing
-
-bool out_of_bounds(const double& x, const double& lower, const double& upper){
-    return (x < (lower - DOUBLE_PRECISION_EPSILON)) || (x > (upper + DOUBLE_PRECISION_EPSILON));
-}
-
-// penalty functions
-double R_cum(const double& x, PyObject*& obj, const int& f_type){
-    switch(f_type){
-        case 0:  return PyFloat_AsDouble(PyObject_CallFunction(obj,"f",x));
-        case 1:  return abs(x); // L1
-        case 2:  return x*x;  // L2
-        default: return (double)NULL;
-    }
-}
-
-double R_inst(const double& x, const double& s_min, const double& s_max, 
-    PyObject*& obj, const int& f_type)
-{
-    // slope constraints
-    if(out_of_bounds(x, s_min, s_max)){ return DBL_MAX; } //NPY_INFINITY
-
-    switch(f_type){
-        case 0:  return PyFloat_AsDouble(PyObject_CallFunction(obj,"f",x));
-        case 1:  return abs(x); // L1
-        case 2:  return x*x;  // L2
-        default: return (double)NULL;
-    }
+    if(!PyObject_TypeCheck(obj, &PyUnicode_Type)) throw std::runtime_error("get_function_type: Unhandled type for NumpyObject: " + std::string(Py_TYPE(obj)->tp_name) + ". Please create a GitHub issue at https://github.com/dderiso/gdtw/issues with this message and the inputs you used when calling the gdtw solver.");
+    if(PyUnicode_CompareWithASCIIString(obj,"L2") == 0) return 0;
+    if(PyUnicode_CompareWithASCIIString(obj,"L1") == 0) return 1;
+    throw std::runtime_error("set_input_instantaneous_loss_functional: Unknown string: " + std::string(PyUnicode_AsUTF8(obj)) + ". Acceptable strings are either 'L1' or 'L2'. If you feel this error is incorrect, please create a GitHub issue at https://github.com/dderiso/gdtw/issues with this message and the inputs you used when calling the gdtw solver.");
 }
 
 static PyObject* gdtwcpp_solve(PyObject *self, PyObject *args){
     // shared pointers with Python
-    PyObject *R_cum_obj, *R_inst_obj, *t_obj, *Tau_obj, *D_obj;
+    PyObject *R_cuml_obj, *R_inst_obj, *t_obj, *Tau_obj, *D_obj;
     PyArrayObject *tau_obj, *path_obj;
     PyFloatObject *f_of_tau_obj;
 
@@ -96,7 +61,7 @@ static PyObject* gdtwcpp_solve(PyObject *self, PyObject *args){
         &t_obj,
         &Tau_obj,
         &D_obj,
-        &R_cum_obj, 
+        &R_cuml_obj, 
         &R_inst_obj,
         &lambda_cum,
         &lambda_inst,
@@ -109,6 +74,18 @@ static PyObject* gdtwcpp_solve(PyObject *self, PyObject *args){
         &PyFloat_Type, &f_of_tau_obj  // output
     )) return NULL;
 
+    // loss functionals
+    std::function<double(const double&)> R_cuml;
+    std::function<double(const double&)> R_inst;
+    const int r_cuml_type = get_function_type(R_cuml_obj);
+    const int r_inst_type = get_function_type(R_inst_obj);
+    if(r_cuml_type == 0) R_cuml = [](const double& x) { return x*x; }; // L2
+    if(r_inst_type == 0) R_inst = [](const double& x) { return x*x; };
+    if(r_cuml_type == 1) R_cuml = [](const double& x) { return std::abs(x); }; // L1
+    if(r_inst_type == 1) R_inst = [](const double& x) { return std::abs(x); };
+    if(r_cuml_type == 2) R_cuml = [R_cuml_obj](const double& x) { return PyFloat_AsDouble(PyObject_CallFunction(R_cuml_obj,"f",x)); }; // Python function
+    if(r_inst_type == 2) R_inst = [R_inst_obj](const double& x) { return PyFloat_AsDouble(PyObject_CallFunction(R_inst_obj,"f",x)); };
+    
     // inputs
     NumpyObject t   = NumpyObject(t_obj, 't', verbose);
     NumpyObject Tau = NumpyObject(Tau_obj, 'T', verbose);
@@ -134,19 +111,11 @@ static PyObject* gdtwcpp_solve(PyObject *self, PyObject *args){
     #define n(i,j) *(double*)PyArray_GETPTR2(n,i,j)
     #define p(i,j)    *(int*)PyArray_GETPTR2(p,i,j)
 
-    // functional types
-    const int r_cum_type  = get_function_type(R_cum_obj);
-    const int r_inst_type = get_function_type(R_inst_obj);
-
-    // readability: hide the last 2 args, which are used for switching between C++ and Python functionals
-    #define R_cum(x)       R_cum(x,               R_cum_obj,  r_cum_type)
-    #define R_inst(x,y,z) R_inst(x, s_min, s_max, R_inst_obj, r_inst_type)
-
     // fill node costs and init f(i,j) = inf
     int i,j,k;
     for (i=0; i<N; i++){
         for (j=0; j<M; j++){
-            n(i,j) = D(i,j) + lambda_cum * R_cum( Tau(i,j) - t[i] ); 
+            n(i,j) = D(i,j) + lambda_cum * R_cuml( Tau(i,j) - t[i] ); 
             f(i,j) = NPY_INFINITY;
         }
     }
@@ -160,19 +129,17 @@ static PyObject* gdtwcpp_solve(PyObject *self, PyObject *args){
     }
 
     // fill i=1 ... N-1
-    // int n_paths = 0;
     double delta_t, slope, e_ijk, total_;
     for (i=0; i<N-1; i++){ // i=0 ... N-2 ( f(i+1,k) is filled )
         delta_t = t[i+1] - t[i];
         for (j=0; j<M; j++){
             for (k=0; k<M; k++){
                 slope  = ( Tau(i+1,k) - Tau(i,j) ) / delta_t;
-                e_ijk  = lambda_inst * R_inst(slope, s_min, s_max); // edge cost
+                e_ijk  = lambda_inst * (OUT_OF_BOUNDS(slope, s_min, s_max) ? DBL_MAX : R_inst(slope)); // edge cost, use NPY_INFINITY instead of DBL_MAX ?
                 total_ = f(i,j) + delta_t * ( e_ijk + n(i+1,k) ); // Bellman
                 if (total_ < f(i+1,k)){
                     f(i+1,k) = total_; // min
                     p(i+1,k) = j; // argmin
-                    // n_paths = 0;
                 }
             }
         }
@@ -183,7 +150,8 @@ static PyObject* gdtwcpp_solve(PyObject *self, PyObject *args){
     double min,min_;
     if(BC_start_stop){
         j_opt = j_center; // enforce t_N = 1
-    } else {
+    } 
+    else {
         // argmin (unordered, linear search)
         min = NPY_INFINITY;
         for (j=0; j<M; j++){
@@ -202,7 +170,6 @@ static PyObject* gdtwcpp_solve(PyObject *self, PyObject *args){
     for (i=N-1; i>-1; i--){ // i = 0 ... N-1
         tau[i]  = Tau(i,j_opt);
         path[i] = j_opt;
-        // printf("%i %i %.3f \n", i, j_opt, tau[i]);
         j_opt   = p(i,j_opt);
     }
 

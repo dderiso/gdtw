@@ -24,19 +24,25 @@ if "CC" in os.environ:
   print("If compilation fails, remove this variable from your environment by typing 'unset CC', and try running setup again.")
   print("*"*110)
 
-
 from setuptools.command.build_ext import build_ext
+
 class BuildExt(build_ext):
   def build_extensions(self):
-    cpp_compiler = None
+    cc = None
     if "CC" in os.environ:
-      cpp_compiler = os.environ["CC"]
+      cc = os.environ["CC"]
+    elif sys.platform == 'darwin':
+      if os.system("which g++")==0:
+        cc = "g++"
     elif sys.platform == "linux":
       cpp_compiler = "g++"
-    if cpp_compiler is not None:
-      self.compiler.compiler_so[0] = cpp_compiler
-      self.compiler.compiler[0]    = cpp_compiler
-      self.compiler.linker_so[0]   = cpp_compiler
+    if cc is not None:
+      self.compiler.compiler_so[0] = cc
+      self.compiler.compiler[0]    = cc
+      self.compiler.linker_so[0]   = cc
+
+      self.compiler.compiler_so.append('-stdlib=libc++')
+      self.compiler.compiler.append('-stdlib=libc++')
     super(BuildExt, self).build_extensions()
 
 cpp_module = Extension(
@@ -45,7 +51,7 @@ cpp_module = Extension(
   include_dirs=[
     np.get_include()
   ],
-  extra_compile_args=["-Ofast", "-Wall"],
+  extra_compile_args=["-Ofast", "-Wall", "-std=c++11", "-flto", "-march=native"],
   language="c++11"
 )
 
