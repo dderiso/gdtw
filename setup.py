@@ -63,7 +63,7 @@ with open("readme.md","r") as f:
 
 setup_params = setup(
   name='gdtw',
-  version='1.1.1',
+  version='1.1.2',
   author='Dave Deriso',
   author_email='dderiso@alumni.stanford.edu',
   description='General Dynamic Time Warping',
