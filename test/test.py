@@ -41,30 +41,30 @@ except Exception as e:
 #     print(f"MSE error between the old and current solution: {mse_error}")
 
 
-import time
-from tabulate import tabulate
+# import time
+# from tabulate import tabulate
 
-# Initialize an empty list to store the performance times
-performance_times = []
+# # Initialize an empty list to store the performance times
+# performance_times = []
 
-# Define the sizes of t to test
-t_sizes = [10, 100, 1000, 10000] #, 100000]
+# # Define the sizes of t to test
+# t_sizes = [10, 100, 1000, 10000] #, 100000]
 
-# Loop over the sizes of t
-for t_size in t_sizes:
-    print(f"Testing t = {t_size}")
-    # Initialize a list to store the times for this size
-    times_for_this_size = []
-    # Repeat the test 3 times
-    for _ in range(3):
-        t_sub = np.linspace(0,1,t_size)
-        start_time = time.time()
-        phi, x_tau, f_tau, g = gdtw.warp(x(t_sub), y(t_sub))#, params={"Loss": loss})
-        end_time = time.time()
-        times_for_this_size.append(end_time - start_time)
-    # Append the average time for this size to the performance times
-    performance_times.append(sum(times_for_this_size) / len(times_for_this_size))
-    print(f"avg = {performance_times[-1]}")
+# # Loop over the sizes of t
+# for t_size in t_sizes:
+#     print(f"Testing t = {t_size}")
+#     # Initialize a list to store the times for this size
+#     times_for_this_size = []
+#     # Repeat the test 3 times
+#     for _ in range(3):
+#         t_sub = np.linspace(0,1,t_size)
+#         start_time = time.time()
+#         phi, x_tau, f_tau, g = gdtw.warp(x(t_sub), y(t_sub))#, params={"Loss": loss})
+#         end_time = time.time()
+#         times_for_this_size.append(end_time - start_time)
+#     # Append the average time for this size to the performance times
+#     performance_times.append(sum(times_for_this_size) / len(times_for_this_size))
+#     print(f"avg = {performance_times[-1]}")
 
-# Print the performance times in a table
-print(tabulate(zip(t_sizes, performance_times), headers=['Size of t', 'Average Time']))
+# # Print the performance times in a table
+# print(tabulate(zip(t_sizes, performance_times), headers=['Size of t', 'Average Time']))
