@@ -18,6 +18,7 @@ yum install -y centos-release-scl
 
 yum install -y rh-python35
 scl enable rh-python35 bash
+source scl_source enable rh-python35
 python3.5 --version
 python3.5 -m pip install --upgrade pip
 python3.5 -m pip install setuptools wheel auditwheel
