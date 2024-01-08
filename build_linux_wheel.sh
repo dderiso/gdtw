@@ -6,15 +6,15 @@ set -e
 # manylinux2014_x86_64
 yum update -y
 yum install -y centos-release-scl
-yum list available rh-python*
+# yum list available rh-python*
 
-yum install -y rh-python37
-scl enable rh-python37 bash
-python3.7 --version
-python3.7 -m pip install --upgrade pip
-python3.7 -m pip install setuptools wheel auditwheel
-python3.7 -m pip install numpy
-python3.7 /github/workspace/setup.py bdist_wheel
+yum install -y rh-python38
+scl enable rh-python38 bash
+python3.8 --version
+python3.8 -m pip install --upgrade pip
+python3.8 -m pip install setuptools wheel auditwheel
+python3.8 -m pip install numpy
+python3.8 /github/workspace/setup.py bdist_wheel
 
 # yum list python*
 # yum install -y python3 python3-devel python3-pip
