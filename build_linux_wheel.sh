@@ -4,6 +4,13 @@
 set -e 
 
 # manylinux2014_x86_64
+yum update -y
+yum install centos-release-scl
+yum list available rh-python*
+
+yum install rh-python37
+scl enable rh-python37 bash
+
 yum list python*
 yum install -y python3 python3-devel python3-pip
 python3 -m pip install --upgrade pip
