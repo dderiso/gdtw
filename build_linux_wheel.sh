@@ -16,19 +16,28 @@ yum install -y centos-release-scl
 # python3.8 -m pip install numpy
 # python3.8 /github/workspace/setup.py bdist_wheel
 
-yum install -y rh-python35
-scl enable rh-python35 bash
-# source scl_source enable rh-python35
-ls /opt/rh/rh-python35
+# yum install -y rh-python35
+# scl enable rh-python35 bash
+# # source scl_source enable rh-python35
+# ls /opt/rh/rh-python35
 
-export PATH=/opt/rh/rh-python35/root/usr/bin:$PATH
-ls /opt/rh/rh-python35/root/usr/bin/
+# export PATH=/opt/rh/rh-python35/root/usr/bin:$PATH
+# ls /opt/rh/rh-python35/root/usr/bin/
 
-python3.5 --version
-python3.5 -m pip install --upgrade pip
-python3.5 -m pip install setuptools wheel auditwheel
-python3.5 -m pip install numpy
-python3.5 /github/workspace/setup.py bdist_wheel
+# python3.5 --version
+# python3.5 -m pip install --upgrade pip
+# python3.5 -m pip install setuptools wheel auditwheel
+# python3.5 -m pip install numpy
+# python3.5 /github/workspace/setup.py bdist_wheel
+
+yum install -y https://rpms.remirepo.net/enterprise/remi-release-7.rpm
+yum-config-manager --enable remi
+yum install -y python39
+python3.9 --version
+python3.9 -m pip install --upgrade pip
+python3.9 -m pip install setuptools wheel auditwheel
+python3.9 -m pip install numpy
+python3.9 /github/workspace/setup.py bdist_wheel
 
 # yum list python*
 # yum install -y python3 python3-devel python3-pip
