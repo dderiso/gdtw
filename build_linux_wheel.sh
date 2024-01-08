@@ -4,12 +4,7 @@
 set -e 
 
 # manylinux2014_x86_64
-yum list python
-yum list python35
-yum list python36
-yum list python37
-yum list python38
-yum list python39
+yum list python*
 yum install -y python3 python3-devel python3-pip
 python3 -m pip install --upgrade pip
 python3 -m pip install setuptools wheel auditwheel
