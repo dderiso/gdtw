@@ -43,6 +43,12 @@ curl https://pyenv.run | bash
 exec $SHELL
 pyenv install 3.7.x
 pyenv global 3.7.x
+python --version
+python3.7 --version
+python3.7 -m pip install --upgrade pip
+python3.7 -m pip install setuptools wheel auditwheel
+python3.7 -m pip install numpy
+python3.7 /github/workspace/setup.py bdist_wheel
 
 # yum list python*
 # yum install -y python3 python3-devel python3-pip
