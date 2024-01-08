@@ -3,6 +3,26 @@
 # exit on first error
 set -e 
 
+curl https://pyenv.run | bash
+exec $SHELL
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
+echo "pyenv install 3.7.10"
+pyenv install 3.7.10
+pyenv global 3.7.10
+
+python --version
+python3.7 --version
+python3.7 -m pip install --upgrade pip
+python3.7 -m pip install setuptools wheel auditwheel
+python3.7 -m pip install numpy
+python3.7 /github/workspace/setup.py bdist_wheel
+
+
+
 # manylinux2014_x86_64
 # yum update -y
 # yum install -y centos-release-scl
@@ -38,22 +58,6 @@ set -e
 # python3.9 -m pip install setuptools wheel auditwheel
 # python3.9 -m pip install numpy
 # python3.9 /github/workspace/setup.py bdist_wheel
-
-curl https://pyenv.run | bash
-exec $SHELL
-export PYENV_ROOT="$HOME/.pyenv"
-[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
-
-pyenv install 3.7.x
-pyenv global 3.7.x
-
-python --version
-python3.7 --version
-python3.7 -m pip install --upgrade pip
-python3.7 -m pip install setuptools wheel auditwheel
-python3.7 -m pip install numpy
-python3.7 /github/workspace/setup.py bdist_wheel
 
 # yum list python*
 # yum install -y python3 python3-devel python3-pip
