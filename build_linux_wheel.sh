@@ -4,8 +4,8 @@
 set -e 
 
 # manylinux2014_x86_64
-yum update -y
-yum install -y centos-release-scl
+# yum update -y
+# yum install -y centos-release-scl
 # yum list available rh-python*
 
 # yum install -y rh-python38
@@ -41,8 +41,13 @@ yum install -y centos-release-scl
 
 curl https://pyenv.run | bash
 exec $SHELL
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+
 pyenv install 3.7.x
 pyenv global 3.7.x
+
 python --version
 python3.7 --version
 python3.7 -m pip install --upgrade pip
