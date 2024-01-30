@@ -238,7 +238,7 @@ class GDTW:
                         self.N = self.t.shape[0]
                         # and alert the user of this choice.
                         if self.verbose > 1:
-                            print(f"Over-riding your choice of N: N = {self.N} == len(t). Since t is irregularly sampled, we'll want to integrate over that vector.")
+                            print(f"Over-riding your choice of N: N = {self.N} == len(t). Since t is irregularly sampled, we'll assume the timestamps are from actual data, so rather than compute our own evenly-spaced t, we'll proceed with your timepoints.")
                     # If N is bigger than t,
                     elif self.N > self.t.shape[0]:
                         # we'll use the smaller value,
