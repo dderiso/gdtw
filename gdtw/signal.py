@@ -122,7 +122,7 @@ class Signal:
                     # and see if it's multidimensional. 
                     if t_z.ndim > 1:
                         # If so, we'll complain.
-                        raise ValueError(f"Signal {name} is given as a tuple, but the second entry (time) is given as a multidimensional array. Time can only be 1-D.")
+                        raise ValueError(f"Signal {self.name} is given as a tuple, but the second entry (time) is given as a multidimensional array. Time can only be 1-D.")
 
                 # Finally, we'll construct a function from our signal samples using piecewise linear interpolation.
                 self.z_f = piecewise_linear_interpolate(t_z, self.z_a)
