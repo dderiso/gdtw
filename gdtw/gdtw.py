@@ -305,7 +305,7 @@ class GDTW:
         if self.verbose > 0:
             M_suggested = np.min((self.N*.55, self.M_max))
             
-            if self.M < M_suggested:
+            if np.abs(self.M - M_suggested) > 1e-10:
                 print(f"Suggestion: M is too small. Increasing M from {self.M} to ~{M_suggested} may offer better results.")
 
             if self.M > (self.N):
