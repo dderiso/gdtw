@@ -80,7 +80,7 @@ class GDTW:
 
         # solution
         self.tau          = np.zeros( self.N,        dtype=np.double) # phi is continuous
-        self.path         = np.zeros( self.N,        dtype=int)    # path is discrete
+        self.path         = np.zeros( self.N,        dtype=np.int32)    # path is discrete
         self.f_tau        = np.double(0.0)
         self.phi          = lambda t_: np.interp(t_, self.t, self.tau)
 
