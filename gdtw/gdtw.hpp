@@ -79,25 +79,24 @@ int solve(
 
     // init by filling i=0
     const int j_center = (M-1)/2 + 1; // M is always odd
-    for (j=0; j<M; j++){
-        f(0,j) = n(0,j);
-        if (BC_start_stop && j != j_center){
-            f(0,j) = INFINITY; // enforce t_0 = 0
-        }
+    if (BC_start_stop){
+        for (j=0; j<M; j++) f(0,j) = INFINITY;
+        f(0,j_center) = n(0,j_center); // enforce t_0 = 0
+    } else {
+        for (j=0; j<M; j++) f(0,j) = n(0,j);
     }
-
-    // fill i=1 ... N-1
-    double delta_t, slope, e_ijk, total_;
-    for (i=0; i<N-1; i++){ // i=0 ... N-2 ( f(i+1,k) is filled )
-        delta_t = t[i+1] - t[i];
+    
+    double dt, slope, e_ijk, path_cost;
+    for (i=0; i<N-1; i++){
+        dt = t[i+1] - t[i];
         for (j=0; j<M; j++){
             for (k=0; k<M; k++){
-                slope  = ( Tau(i+1,k) - Tau(i,j) ) / delta_t;
+                slope = ( Tau(i+1,k) - Tau(i,j) ) / dt;
                 if (OUT_OF_BOUNDS(slope, s_min, s_max)) continue; // boundary conditions
-                e_ijk  = lambda_inst * R_inst(slope); // edge cost
-                total_ = f(i,j) + delta_t * ( e_ijk + n(i+1,k) ); // Bellman
-                if (total_ < f(i+1,k)){
-                    f(i+1,k) = total_; // min
+                e_ijk = lambda_inst * R_inst(slope); // edge cost
+                path_cost = f(i,j) + dt * ( e_ijk + n(i+1,k) ); // Bellman
+                if (path_cost < f(i+1,k)){
+                    f(i+1,k) = path_cost; // min
                     p(i+1,k) = j; // argmin
                 }
             }
