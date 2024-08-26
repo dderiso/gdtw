@@ -80,8 +80,8 @@ setup_params = setup(
     "Operating System :: OS Independent"
   ],
   cmdclass={'build_ext': BuildExt},
-  setup_requires=["numpy"],
-  install_requires=["numpy"],
+  setup_requires=["numpy>=1.20.0"],
+  install_requires=["numpy>=1.20.0"],
   ext_modules=[cpp_module],
   packages=['gdtw']
 )
