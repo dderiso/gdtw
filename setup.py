@@ -31,17 +31,27 @@ class BuildExt(build_ext):
     cc = None
     if "CC" in os.environ:
       cc = os.environ["CC"]
+    
     elif sys.platform == 'darwin':
       cc = "g++"
       self.compiler.compiler_so.append('-stdlib=libc++')
       self.compiler.compiler.append('-stdlib=libc++')
       # self.compiler.compiler_so.append('-target x86_64-apple-macos')
       # self.compiler.compiler.append('-target x86_64-apple-macos')
+    
     elif sys.platform == "linux":
       cc = "g++"
       if '-Wstrict-prototypes' in self.compiler.compiler_so:
         self.compiler.compiler_so.remove('-Wstrict-prototypes') # gets rid of a useless warning
       self.compiler.compiler_so.append('-Wno-maybe-uninitialized')
+  
+    elif sys.platform == "win32":
+      cc = "cl"
+      self.compiler.compiler_so.extend(['/EHsc', '/O2', '/W3', '/GL', '/DNDEBUG', '/MD'])
+      # Ensure Visual C++ Build Tools are available
+      if not any(os.path.exists(os.path.join(path, 'cl.exe')) for path in os.environ['PATH'].split(os.pathsep)):
+          raise RuntimeError("Visual C++ Build Tools not found. Please ensure they are installed and properly set up.")
+    
     if cc is not None:
       self.compiler.compiler_so[0] = cc
       self.compiler.compiler[0]    = cc

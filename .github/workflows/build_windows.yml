@@ -23,11 +23,21 @@ jobs:
         python -m pip install --upgrade pip
         pip install setuptools wheel twine numpy
 
+    - name: Install Visual C++ Build Tools
+      uses: microsoft/setup-msbuild@v1.0.2
+
     - name: Build wheel
       run: |
         python setup.py bdist_wheel
       env:
         PYTHONPATH: ${{ env.pythonLocation }}
+        DISTUTILS_USE_SDK: "1"
+        MSSdk: "1"
+
+    - name: Debug output
+      run: |
+        dir /s build
+        type build\temp.win-amd64-cpython-311\Release\gdtw\gdtwcpp.cp311-win_amd64.lib
 
     - name: Publish Wheel
       env:
