@@ -51,9 +51,13 @@ class BuildExt(build_ext):
         self.compiler.compile_options.extend(['/EHsc', '/O2', '/W3', '/GL', '/DNDEBUG', '/MD'])
       elif hasattr(self.compiler, 'compiler'):
         self.compiler.compiler.extend(['/EHsc', '/O2', '/W3', '/GL', '/DNDEBUG', '/MD'])
-      # Ensure Visual C++ Build Tools are available
+      # Set environment variables for MSVC
+      os.environ['DISTUTILS_USE_SDK'] = '1'
+      os.environ['MSSdk'] = '1'
+      # Check if Visual C++ Build Tools are available
       if not any(os.path.exists(os.path.join(path, 'cl.exe')) for path in os.environ['PATH'].split(os.pathsep)):
-          raise RuntimeError("Visual C++ Build Tools not found. Please ensure they are installed and properly set up.")
+        print("Warning: Visual C++ Build Tools not found in PATH. Compilation may fail.")
+        print("Please ensure they are installed and properly set up.")
     
     if cc is not None:
       if hasattr(self.compiler, 'compiler_so'):

@@ -24,7 +24,13 @@ jobs:
         pip install setuptools wheel twine numpy
 
     - name: Install Visual C++ Build Tools
-      uses: microsoft/setup-msbuild@v1.0.2
+      uses: microsoft/vs-setup-exe@v1
+      with:
+        vs-version: '[17.0,18.0)'
+        components: Microsoft.VisualStudio.Component.VC.Tools.x86.x64
+
+    - name: Set up environment for MSVC
+      uses: ilammy/msvc-dev-cmd@v1
 
     - name: Build wheel
       run: |
@@ -37,7 +43,12 @@ jobs:
     - name: Debug output
       run: |
         dir /s build
-        type build\temp.win-amd64-cpython-311\Release\gdtw\gdtwcpp.cp311-win_amd64.lib
+        if exist build\temp.win-amd64-cpython-311\Release\gdtw\gdtwcpp.cp311-win_amd64.lib (
+          type build\temp.win-amd64-cpython-311\Release\gdtw\gdtwcpp.cp311-win_amd64.lib
+        ) else (
+          echo File not found: build\temp.win-amd64-cpython-311\Release\gdtw\gdtwcpp.cp311-win_amd64.lib
+          dir /s build\temp.win-amd64-cpython-311\Release\gdtw
+        )
 
     - name: Publish Wheel
       env:
