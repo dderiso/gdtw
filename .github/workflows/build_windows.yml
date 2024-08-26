@@ -24,10 +24,7 @@ jobs:
         pip install setuptools wheel twine numpy
 
     - name: Install Visual C++ Build Tools
-      uses: microsoft/vs-setup-exe@v1
-      with:
-        vs-version: '[17.0,18.0)'
-        components: Microsoft.VisualStudio.Component.VC.Tools.x86.x64
+      uses: microsoft/setup-msbuild@v1.0.2
 
     - name: Set up environment for MSVC
       uses: ilammy/msvc-dev-cmd@v1

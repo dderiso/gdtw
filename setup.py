@@ -58,7 +58,12 @@ class BuildExt(build_ext):
       if not any(os.path.exists(os.path.join(path, 'cl.exe')) for path in os.environ['PATH'].split(os.pathsep)):
         print("Warning: Visual C++ Build Tools not found in PATH. Compilation may fail.")
         print("Please ensure they are installed and properly set up.")
-    
+      # Add extra compile arguments for Windows
+      if hasattr(self.compiler, 'compile_options'):
+        self.compiler.compile_options.extend(['/std:c++14', '/arch:AVX2'])
+      elif hasattr(self.compiler, 'compiler'):
+        self.compiler.compiler.extend(['/std:c++14', '/arch:AVX2'])
+      
     if cc is not None:
       if hasattr(self.compiler, 'compiler_so'):
         self.compiler.compiler_so[0] = cc
