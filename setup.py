@@ -60,9 +60,9 @@ class BuildExt(build_ext):
         print("Please ensure they are installed and properly set up.")
       # Add extra compile arguments for Windows
       if hasattr(self.compiler, 'compile_options'):
-        self.compiler.compile_options.extend(['/std:c++14', '/arch:AVX2'])
+        self.compiler.compile_options.extend(['/std:c++14', '/arch:AVX2', '/Ot'])
       elif hasattr(self.compiler, 'compiler'):
-        self.compiler.compiler.extend(['/std:c++14', '/arch:AVX2'])
+        self.compiler.compiler.extend(['/std:c++14', '/arch:AVX2', '/Ot'])
       
     if cc is not None:
       if hasattr(self.compiler, 'compiler_so'):

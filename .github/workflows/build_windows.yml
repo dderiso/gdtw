@@ -47,7 +47,16 @@ jobs:
           dir /s build\temp.win-amd64-cpython-311\Release\gdtw
         )
 
+    - name: Analyze build errors
+      if: failure()
+      run: |
+        echo "Analyzing build errors..."
+        type build\temp.win-amd64-cpython-311\Release\gdtw\gdtw_solver.obj.log
+        echo "Checking for missing PyInit function..."
+        findstr /C:"PyInit_gdtwcpp" gdtw/gdtw_solver.cpp
+
     - name: Publish Wheel
+      if: success()
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
