@@ -47,15 +47,21 @@ class BuildExt(build_ext):
   
     elif sys.platform == "win32":
       cc = "cl"
-      self.compiler.compiler_so.extend(['/EHsc', '/O2', '/W3', '/GL', '/DNDEBUG', '/MD'])
+      if hasattr(self.compiler, 'compile_options'):
+        self.compiler.compile_options.extend(['/EHsc', '/O2', '/W3', '/GL', '/DNDEBUG', '/MD'])
+      elif hasattr(self.compiler, 'compiler'):
+        self.compiler.compiler.extend(['/EHsc', '/O2', '/W3', '/GL', '/DNDEBUG', '/MD'])
       # Ensure Visual C++ Build Tools are available
       if not any(os.path.exists(os.path.join(path, 'cl.exe')) for path in os.environ['PATH'].split(os.pathsep)):
           raise RuntimeError("Visual C++ Build Tools not found. Please ensure they are installed and properly set up.")
     
     if cc is not None:
-      self.compiler.compiler_so[0] = cc
-      self.compiler.compiler[0]    = cc
-      self.compiler.linker_so[0]   = cc
+      if hasattr(self.compiler, 'compiler_so'):
+        self.compiler.compiler_so[0] = cc
+      if hasattr(self.compiler, 'compiler'):
+        self.compiler.compiler[0] = cc
+      if hasattr(self.compiler, 'linker_so'):
+        self.compiler.linker_so[0] = cc
     super(BuildExt, self).build_extensions()
 
 cpp_module = Extension(
