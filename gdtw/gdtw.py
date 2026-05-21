@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # 
-# Copyright (C) 2019-2024 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
+# Copyright (C) 2019-2026 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
 # Copyright (C) 2019-2024 Stephen Boyd
 # 
 # GDTW is a Python/C++ library that performs dynamic time warping.
@@ -36,7 +36,11 @@ class GDTW:
         self.Loss           = "L2"
         self.R_cum          = "L2"
         self.R_inst         = "L2"
+        self.huber_delta    = 1.0
         self.loss_f         = None
+
+        # symmetric warping: ψ(t) = 2t − φ(t); loss reads y at ψ(t) instead of t.
+        self.symmetric      = False
 
         # search space size
         self.N              = None
@@ -83,8 +87,12 @@ class GDTW:
         self.path         = np.zeros( self.N,        dtype=np.int32)    # path is discrete
         self.f_tau        = np.double(0.0)
         self.phi          = lambda t_: np.interp(t_, self.t, self.tau)
+        self.psi          = lambda t_: 2.0*np.asarray(t_, dtype=np.double) - np.interp(t_, self.t, self.tau)
 
         return self
+
+    def get_psi_values(self):
+        return 2.0*self.t - self.tau
 
     def compute_taus(self):
         # initial u and ls
@@ -125,15 +133,27 @@ class GDTW:
             X = X[..., None]
         X = np.where(np.isnan(X), np.inf, X)
 
-        # y(t): (N,) or (N, d). Reshape so it broadcasts against X over the M axis.
-        Y = np.asarray(self.y_f(self.t), dtype=np.double)
-        if Y.ndim == 1:
-            Y = Y[..., None]
-        Y = Y[:, None, :]  # (N, 1, d)
+        if self.symmetric:
+            # Symmetric mode: y is read at ψ(t_i, j) = 2 t_i − Tau[i, j] instead of t_i,
+            # coupling φ and ψ in the same DP solve. The DP itself is unchanged.
+            psi          = 2.0*self.t[:, None] - self.Tau
+            out_of_range = (psi < 0.0) | (psi > 1.0)
+            Y            = np.asarray(self.y_f(psi), dtype=np.double)
+            if Y.ndim == 2:
+                Y = Y[..., None]
+            Y      = np.where(np.isnan(Y), np.inf, Y)
+            self.D = self.loss_f(X - Y).sum(axis=-1)
+            self.D[out_of_range] = np.inf
+        else:
+            # y(t): (N,) or (N, d). Reshape so it broadcasts against X over the M axis.
+            Y = np.asarray(self.y_f(self.t), dtype=np.double)
+            if Y.ndim == 1:
+                Y = Y[..., None]
+            Y = Y[:, None, :]  # (N, 1, d)
 
-        # Elementwise loss, then reduce the channel axis. Sum-on-length-1 is a no-op, so the
-        # scalar path is bit-identical to the legacy (X-Y)**2 / np.abs(X-Y) implementation.
-        self.D = self.loss_f(X - Y).sum(axis=-1)
+            # Elementwise loss, then reduce the channel axis. Sum-on-length-1 is a no-op, so the
+            # scalar path is bit-identical to the legacy (X-Y)**2 / np.abs(X-Y) implementation.
+            self.D = self.loss_f(X - Y).sum(axis=-1)
 
         if self.verbose > 0: print(f"Pre-computed loss: {time.time() - time_start :03.4f} sec")
         return self
@@ -156,10 +176,11 @@ class GDTW:
             self.D,
             self.R_cum,
             self.R_inst,
-            np.double(self.lambda_cum), 
+            np.double(self.lambda_cum),
             np.double(self.lambda_inst),
-            np.double(self.s_min), 
+            np.double(self.s_min),
             np.double(self.s_max),
+            np.double(self.huber_delta),
             self.BC_start_stop,
             self.verbose,
             self.tau,
@@ -308,7 +329,7 @@ class GDTW:
         self.d = self.d_x
 
         # Finally, we'll process our loss function.
-        self.loss_f = process_function(self.Loss)
+        self.loss_f = process_function(self.Loss, self.huber_delta)
 
         return self
 

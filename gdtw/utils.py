@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # 
-# Copyright (C) 2019-2024 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
+# Copyright (C) 2019-2026 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
 # Copyright (C) 2019-2024 Stephen Boyd
 # 
 # GDTW is a Python/C++ library that performs dynamic time warping.
@@ -21,7 +21,7 @@ def scale(seq, range=[-1,1]):
         return np.column_stack([scale(seq[:, k], range) for k in np.arange(seq.shape[1])])
     return (range[1]-range[0])*((seq-np.nanmin(seq))/np.nanmax(seq-np.nanmin(seq))) + range[0]
 
-def process_function(f):
+def process_function(f, huber_delta=1.0):
     # Loss/regularizer functionals are elementwise: f(R) is applied to each element of the
     # residual tensor R, and the caller (compute_dist_matrix) reduces over the channel axis.
     # Custom callables must therefore preserve shape (not collapse channels).
@@ -37,8 +37,11 @@ def process_function(f):
         # if so convert the string into a function.
         if   f == "L1": f_out = lambda x_,axis=1: np.abs(x_) # np.linalg.norm(x_,ord=1,axis=axis)
         elif f == "L2": f_out = lambda x_,axis=1: x_**2     # np.linalg.norm(x_,ord=2,axis=axis)**2
+        elif f == "huber":
+            d = float(huber_delta)
+            f_out = lambda x_,axis=1: np.where(np.abs(x_) <= d, 0.5*x_**2, d*(np.abs(x_) - 0.5*d))
         else:
-            raise ValueError("Error: String is not recognized by this API. You can use one of the built-in C function by passing a string such as 'L1' or 'L2'.")
+            raise ValueError("Error: String is not recognized by this API. You can use one of the built-in C functions by passing a string such as 'L1', 'L2', or 'huber'.")
 
     # Or, if it's a callable function (indicates that the user wrote this function),
     elif callable(f):

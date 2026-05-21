@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
  * 
- * Copyright (C) 2019-2024 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
+ * Copyright (C) 2019-2026 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
  * Copyright (C) 2019-2024 Stephen Boyd
  * 
  * GDTW is a Python/C++ library that performs dynamic time warping.
@@ -24,7 +24,7 @@
 #include "gdtw.hpp"
 
 // get type of object (function or string)
-void set_loss_functional(PyObject*& obj, std::function<double(const double&)>& func){
+void set_loss_functional(PyObject*& obj, std::function<double(const double&)>& func, double huber_delta){
     // Python function
     if(PyCallable_Check(obj)) {
         func = [obj](const double& x) { return PyFloat_AsDouble(PyObject_CallFunction(obj,"f",x)); };
@@ -41,7 +41,15 @@ void set_loss_functional(PyObject*& obj, std::function<double(const double&)>& f
         func = [](const double& x) { return L1_PENALTY(x); };
         return;
     }
-    throw std::runtime_error("set_loss_functional: Unknown string: " + std::string(PyUnicode_AsUTF8(obj)) + ". Acceptable strings are either 'L1' or 'L2'. If you feel this error is incorrect, please create a GitHub issue at https://github.com/dderiso/gdtw/issues with this message and the inputs you used when calling the gdtw solver.");
+    if(PyUnicode_CompareWithASCIIString(obj,"huber") == 0) {
+        const double d = huber_delta;
+        func = [d](const double& x) {
+            const double ax = std::abs(x);
+            return ax <= d ? 0.5 * x * x : d * (ax - 0.5 * d);
+        };
+        return;
+    }
+    throw std::runtime_error("set_loss_functional: Unknown string: " + std::string(PyUnicode_AsUTF8(obj)) + ". Acceptable strings are 'L1', 'L2', or 'huber'. If you feel this error is incorrect, please create a GitHub issue at https://github.com/dderiso/gdtw/issues with this message and the inputs you used when calling the gdtw solver.");
 }
 
 static PyObject* extract_python_variables_and_solve(PyObject *self, PyObject *args){
@@ -51,12 +59,12 @@ static PyObject* extract_python_variables_and_solve(PyObject *self, PyObject *ar
     PyFloatObject *f_of_tau_obj;
 
     // const values obtained from Python
-    double lambda_cuml, lambda_inst, s_min, s_max;
+    double lambda_cuml, lambda_inst, s_min, s_max, huber_delta;
     bool BC_start_stop;
     int  verbosity;
 
     // arg parse
-    if (!PyArg_ParseTuple(args, "OOOOOddddpiO!O!O!",
+    if (!PyArg_ParseTuple(args, "OOOOOdddddpiO!O!O!",
         &t_obj, // time series t
         &Tau_obj, // time series Tau
         &D_obj, // time series D
@@ -66,6 +74,7 @@ static PyObject* extract_python_variables_and_solve(PyObject *self, PyObject *ar
         &lambda_inst, // instantaneous loss weight
         &s_min, // minimum slope
         &s_max, // maximum slope
+        &huber_delta, // huber transition point (used only when R_cuml/R_inst == "huber")
         &BC_start_stop, // boundary condition flag
         &verbosity, // verbosity level
         &PyArray_Type, &tau_obj,  // output: warped time series
@@ -76,8 +85,8 @@ static PyObject* extract_python_variables_and_solve(PyObject *self, PyObject *ar
     // loss functionals
     std::function<double(const double&)> R_cuml;
     std::function<double(const double&)> R_inst;
-    set_loss_functional(R_cuml_obj, R_cuml);
-    set_loss_functional(R_inst_obj, R_inst);
+    set_loss_functional(R_cuml_obj, R_cuml, huber_delta);
+    set_loss_functional(R_inst_obj, R_inst, huber_delta);
 
     // inputs
     double* t   = (double*) PyArray_BYTES((PyArrayObject*) t_obj);

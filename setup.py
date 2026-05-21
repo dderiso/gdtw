@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # 
-# Copyright (C) 2019-2024 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
+# Copyright (C) 2019-2026 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
 # Copyright (C) 2019-2024 Stephen Boyd
 # 
 # GDTW is a Python/C++ library that performs dynamic time warping.
