@@ -1,20 +1,48 @@
 [project]
 name = "gdtw"
-description = "General Dynamic Time Warping"
 version = "1.2.0"
+description = "General Dynamic Time Warping"
+readme = "readme.md"
 requires-python = ">=3.7"
+license = { text = "Apache-2.0" }
 authors = [
-	{name = "Dave Deriso", email = "dderiso@alumni.stanford.edu"},
+	{ name = "Dave Deriso", email = "dderiso@alumni.stanford.edu" },
+]
+keywords = ["dynamic time warping", "dtw", "gdtw", "time series", "alignment", "signal processing"]
+classifiers = [
+	"Development Status :: 5 - Production/Stable",
+	"Intended Audience :: Science/Research",
+	"Intended Audience :: Developers",
+	"License :: OSI Approved :: Apache Software License",
+	"Programming Language :: Python :: 3",
+	"Programming Language :: Python :: 3.7",
+	"Programming Language :: Python :: 3.8",
+	"Programming Language :: Python :: 3.9",
+	"Programming Language :: Python :: 3.10",
+	"Programming Language :: Python :: 3.11",
+	"Programming Language :: Python :: 3.12",
+	"Programming Language :: Python :: 3.13",
+	"Programming Language :: C++",
+	"Operating System :: MacOS",
+	"Operating System :: Microsoft :: Windows",
+	"Operating System :: POSIX :: Linux",
+	"Topic :: Scientific/Engineering",
+	"Topic :: Scientific/Engineering :: Mathematics",
+	"Topic :: Scientific/Engineering :: Information Analysis",
 ]
 dependencies = [
-	'numpy>=1.20.0',
+	"numpy>=1.20.0",
 ]
 
 [project.optional-dependencies]
 test = ["pytest>=7"]
 
 [project.urls]
+Homepage = "https://dderiso.github.io/gdtw"
+Documentation = "https://dderiso.github.io/gdtw"
+Source = "https://github.com/dderiso/gdtw"
 "Bug Tracker" = "https://github.com/dderiso/gdtw/issues"
+Paper = "https://rdcu.be/cT5dD"
 
 [build-system]
 requires = [
