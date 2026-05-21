@@ -10,6 +10,9 @@ dependencies = [
 	'numpy>=1.20.0',
 ]
 
+[project.optional-dependencies]
+test = ["pytest>=7"]
+
 [project.urls]
 "Bug Tracker" = "https://github.com/dderiso/gdtw/issues"
 
@@ -19,3 +22,7 @@ requires = [
     "numpy>=1.20.0",
 ]
 build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+python_files = ["test_*.py"]

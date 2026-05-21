@@ -15,10 +15,17 @@
 import numpy as np
 
 def scale(seq, range=[-1,1]):
+    seq = np.asarray(seq, dtype=np.double)
+    # Multi-channel: scale each column independently so a quiet channel doesn't collapse to ~0.
+    if seq.ndim == 2:
+        return np.column_stack([scale(seq[:, k], range) for k in np.arange(seq.shape[1])])
     return (range[1]-range[0])*((seq-np.nanmin(seq))/np.nanmax(seq-np.nanmin(seq))) + range[0]
 
 def process_function(f):
-    # Our API is a first pass. We'll improve this later. For now, we take the choice of 
+    # Loss/regularizer functionals are elementwise: f(R) is applied to each element of the
+    # residual tensor R, and the caller (compute_dist_matrix) reduces over the channel axis.
+    # Custom callables must therefore preserve shape (not collapse channels).
+    # Our API is a first pass. We'll improve this later. For now, we take the choice of
     # loss and regularization functionals as a string or a callable function.
     # We'll parse this API here and return a callable function or None.
 

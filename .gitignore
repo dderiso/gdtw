@@ -1,6 +1,7 @@
 .pyc
 .DS_Store
 __pycache__
+**/__pycache__/
 build/*
 # dist/*
 gdtw.egg-info/*
@@ -14,3 +15,10 @@ test/x_tau.pkl
 gdtw/gdtw.h
 gdtw/gdtw.f90
 gdtw/gdtw_oop.hpp
+
+# Compiled C++ extension (built in-tree by `pip install -e .`)
+*.so
+gdtwcpp*.so
+
+# pytest
+.pytest_cache/

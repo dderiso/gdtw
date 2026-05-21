@@ -113,23 +113,28 @@ class GDTW:
         return self
 
     def compute_dist_matrix(self):
-        # The pre-computed distance matrix must satisfy: D[i,j] = Loss( x(Tau[i,j]) - y(t[i]) )
-        # Note: scipy.spatial.distance.cdist won't work since t is a vector and tau is a matrix.
+        # The pre-computed distance matrix must satisfy: D[i,j] = sum_k Loss( x_k(Tau[i,j]) - y_k(t[i]) )
+        # For scalar signals (d=1) this reduces to D[i,j] = Loss(x(Tau[i,j]) - y(t[i])) bit-identically.
+        # For multi-channel signals (d>1) the per-channel residuals are summed into a single (N, M) D
+        # since the C++ DP solver is dimension-agnostic and consumes a flat distance matrix.
         if self.verbose > 0: time_start = time.time()
-        
-        # We'll compute x(tau) and assign infinitity at undefined points.
-        X = self.x_f(self.Tau)
-        X[np.isnan(X)] = np.inf
-        
-        # We repeat y(t) so that it's the same shape of x(tau).
-        Y = np.tile(self.y_f(self.t).reshape((self.N,1)),(1,self.M))
-        
-        # We apply the processed loss function.
-        #   the default is "L2" => self.D = (X-Y)**2
-        self.D = self.loss_f(X-Y) 
-        # self.D = (X-Y)**2
-        
-        # Finally, we'll report the time it took to do all of this.
+
+        # x(Tau): (N, M) for scalar or (N, M, d) for multi-channel. Normalize to 3-D internally.
+        X = np.asarray(self.x_f(self.Tau), dtype=np.double)
+        if X.ndim == 2:
+            X = X[..., None]
+        X = np.where(np.isnan(X), np.inf, X)
+
+        # y(t): (N,) or (N, d). Reshape so it broadcasts against X over the M axis.
+        Y = np.asarray(self.y_f(self.t), dtype=np.double)
+        if Y.ndim == 1:
+            Y = Y[..., None]
+        Y = Y[:, None, :]  # (N, 1, d)
+
+        # Elementwise loss, then reduce the channel axis. Sum-on-length-1 is a no-op, so the
+        # scalar path is bit-identical to the legacy (X-Y)**2 / np.abs(X-Y) implementation.
+        self.D = self.loss_f(X - Y).sum(axis=-1)
+
         if self.verbose > 0: print(f"Pre-computed loss: {time.time() - time_start :03.4f} sec")
         return self
 
@@ -293,8 +298,14 @@ class GDTW:
             print(f"M={self.M}, N={self.N}")
 
         # Signals are given as generic inputs x and y. We'll parse these here.
-        self.x_a, self.x_f = signal(self.x, "x", self.N)
-        self.y_a, self.y_f = signal(self.y, "y", self.N)
+        self.x_a, self.x_f, self.d_x = signal(self.x, "x", self.N)
+        self.y_a, self.y_f, self.d_y = signal(self.y, "y", self.N)
+        if self.d_x != self.d_y:
+            raise ValueError(
+                f"Signal channel mismatch: x has d={self.d_x} channels but y has d={self.d_y}. "
+                "A single warping function aligns both signals, so x and y must have the same number of channels."
+            )
+        self.d = self.d_x
 
         # Finally, we'll process our loss function.
         self.loss_f = process_function(self.Loss)

@@ -15,6 +15,30 @@ pip install gdtw
 
 For full documentation, including a quick-start tutorial, please see [https://dderiso.github.io/gdtw](https://dderiso.github.io/gdtw).
 
+## Multi-dimensional signals
+
+Signals can be scalar `x: [0,1] -> R` (shape `(T,)`) or vector-valued `x: [0,1] -> R^d` (shape `(T, d)`). A single warping function aligns all `d` channels:
+
+```python
+import numpy as np, gdtw
+t = np.linspace(0, 1, 300)
+x = np.column_stack([np.sin(2*np.pi*5*t),    np.cos(2*np.pi*3*t)])
+y = np.column_stack([np.sin(2*np.pi*5*t**2), np.cos(2*np.pi*3*t**2)])
+phi, x_tau, f_tau, g = gdtw.warp(x, y)   # x_tau.shape == (300, 2)
+```
+
+`x` and `y` must have the same number of channels. Per-channel scaling is applied when `scale_signals=True` (the default), so channels with very different dynamic ranges are each normalized to `[-1, 1]`.
+
+## Running the tests
+
+From the repo root:
+
+```
+pip install -e ".[test]"
+python -m pytest test/ -v
+```
+
+This runs the 1-D regression suite (`test/test_warp.py`) and the multi-dimensional tests (`test/test_multid.py`).
 
 ## Our Paper
 
