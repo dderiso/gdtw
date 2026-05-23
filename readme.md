@@ -8,9 +8,11 @@ GDTW is a library for **general dynamic time warping** — DTW with regularizati
 
 Deriso, D. & Boyd, S. *A general optimization framework for dynamic time warping.* Optimization and Engineering, 2022. [rdcu.be/cT5dD](https://rdcu.be/cT5dD)
 
----
+## License
 
-### Implementations
+Apache-2.0 — see `LICENSE`.
+
+## Languages
 
 |                          | `python/`                              | `cpp/`                                |
 | ---                      | ---                                    | ---                                   |
@@ -23,15 +25,11 @@ Deriso, D. & Boyd, S. *A general optimization framework for dynamic time warping
 | Symmetric mode           | ✓                                      | ✓                                     |
 | Losses / regularizers    | L1, L2, Huber, custom                  | L1, L2, Huber, custom                 |
 
-### Parity anchor
+### Parity
 
 | Metric        | Python (`-Ofast`)         | C++ (`-O2`)               | Δ                |
 | ---           | ---                       | ---                       | ---              |
 | `f_tau`       | `0.166945957779036230`    | `0.166945957779036175`    | ~0.25 ULP        |
 | `phi(0.5)`    | `0.253181820650000000`    | `0.253181820650000000`    | 0                |
 
-Same DP recurrence on both sides; the `f_tau` gap is FP non-associativity in the inner sum from different compiler reduction order, at the precision floor for a cross-build.
-
-## License
-
-Apache-2.0 — see `LICENSE`.
+Same DP recurrence on both sides; the `f_tau` gap is FP non-associativity in the inner sum from different compiler reduction order (at the precision floor).
