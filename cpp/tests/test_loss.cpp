@@ -85,6 +85,18 @@ TEST_CASE("test_huber_regularizer_cpp_branch") {
     CHECK(mx < 0.1);
 }
 
+TEST_CASE("test_custom_loss_without_callable_raises") {
+    /* C++ analog of python test_unknown_loss_string_raises: the C++ API uses
+     * an enum (not a string), so the failure mode is selecting Penalty::CUSTOM
+     * without providing the callable.
+     */
+    auto p = scalar_pair(200);
+    GDTWParams params;
+    params.loss = Penalty::CUSTOM;
+    /* custom_loss left empty */
+    CHECK_THROWS_AS(warp(spec_from(p.x, 1), spec_from(p.y, 1), p.t, params), GDTWError);
+}
+
 TEST_CASE("test_custom_callable_loss_matches_l2_string") {
     /* In C++ the user supplies a PenaltyFn directly with loss=Penalty::CUSTOM. */
     auto p = multid_pair(2, 300, {5.0, 3.0});

@@ -32,7 +32,8 @@ The two implementations share the same iterative DP solver and the same test sur
 | Build system             | `setuptools` (`pip install .`)         | CMake 3.20+, C++20                    |
 | External deps            | NumPy                                  | none                                  |
 | Test framework           | pytest                                 | doctest (vendored)                    |
-| Tests                    | **28** (`python/test/`)                | **18 cases / 1018 assertions**        |
+| Tests                    | **28** (`python/test/`)                | **20 cases / 1020 assertions**        |
+| Functional coverage      | 19 distinct cases (9 parametrized → 28 items) | 19 distinct cases (5 use internal d/loss loops) |
 | Multi-channel signals    | ✓ (d = 1, 2, 3)                        | ✓ (d = 1, 2, 3)                       |
 | Symmetric mode           | ✓                                      | ✓                                     |
 | Losses / regularizers    | L1, L2, Huber, custom callable         | L1, L2, Huber, custom callable        |

@@ -162,6 +162,19 @@ TEST_CASE("test_warp_mismatched_channel_dim_raises") {
     CHECK_THROWS_AS(warp(spec_from(x, 2), spec_from(y, 3), t), GDTWError);
 }
 
+TEST_CASE("test_warp_malformed_shape_raises") {
+    /* C++ analog of python test_warp_higher_rank_input_raises. The C++ Signal
+     * stores samples as a flat (T*d) buffer with explicit d, so there is no
+     * rank>2 to reject; the analogous malformation is data.size() not
+     * divisible by d.
+     */
+    int T = 100;
+    std::vector<double> t = linspace(0.0, 1.0, T);
+    std::vector<double> bad(T * 2 + 1, 0.0);    // 201 elements claimed as d=2
+    std::vector<double> good(T * 2, 0.0);
+    CHECK_THROWS_AS(warp(spec_from(bad, 2), spec_from(good, 2), t), GDTWError);
+}
+
 TEST_CASE("test_warp_baseline_pinned") {
     /* Numerical regression anchor: must match python/test/test_warp.py::test_warp_baseline_pinned. */
     auto p = scalar_pair(200);
