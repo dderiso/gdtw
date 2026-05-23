@@ -2,7 +2,13 @@
 
 _Documentation and interactive demo: [https://dderiso.github.io/gdtw](https://dderiso.github.io/gdtw)._
 
-GDTW is a library for **general dynamic time warping** — DTW with regularization that obviates pre-processing and cross-validation for hyper-parameter selection. Based on a paper by Dave Deriso and Stephen Boyd ([rdcu.be/cT5dD](https://rdcu.be/cT5dD)).
+GDTW is a library for **general dynamic time warping** — DTW with regularization that obviates pre-processing and cross-validation for hyper-parameter selection.
+
+## Paper
+
+Deriso, D. & Boyd, S. *A general optimization framework for dynamic time warping.* Optimization and Engineering, 2022. [rdcu.be/cT5dD](https://rdcu.be/cT5dD)
+
+---
 
 This repo has two parallel implementations of the same algorithm:
 
@@ -25,16 +31,12 @@ The two implementations share the same iterative DP solver and the same test sur
 
 |                          | `python/`                              | `cpp/`                                |
 | ---                      | ---                                    | ---                                   |
-| Public entry point       | `gdtw.warp(x, y, params=...)`          | `gdtw::warp(x, y, t, params)`         |
-| Core class               | `gdtw.GDTW` (Python state machine)     | `gdtw::GDTW` (chainable, state enum)  |
+| Core class               | `gdtw.GDTW`                            | `gdtw::GDTW`                          |
 | DP kernel                | `gdtw/gdtw.hpp` (C++, ~140 LOC)        | `cpp/src/solver.cpp` (same recurrence)|
-| Python ↔ C++ glue        | hand-rolled CPython + NumPy            | none — pure C++                       |
 | Build system             | `setuptools` (`pip install .`)         | CMake 3.20+, C++20                    |
 | External deps            | NumPy                                  | none                                  |
 | Test framework           | pytest                                 | doctest (vendored)                    |
-| Tests                    | **28** (`python/test/`)                | **20 cases / 1020 assertions**        |
-| Functional coverage      | 19 distinct cases (9 parametrized → 28 items) | 19 distinct cases (5 use internal d/loss loops) |
-| Multi-channel signals    | ✓ (d = 1, 2, 3)                        | ✓ (d = 1, 2, 3)                       |
+| Multi-channel signals    | ✓                                      | ✓                                     |
 | Symmetric mode           | ✓                                      | ✓                                     |
 | Losses / regularizers    | L1, L2, Huber, custom callable         | L1, L2, Huber, custom callable        |
 
@@ -46,10 +48,6 @@ The two implementations share the same iterative DP solver and the same test sur
 | `phi(0.5)`    | `0.253181820650000000`    | `0.253181820650000000`    | 0                |
 
 Same DP recurrence on both sides; the `f_tau` gap is FP non-associativity in the inner sum from different compiler reduction order, at the precision floor for a cross-build.
-
-## Paper
-
-Deriso, D. & Boyd, S. *A general optimization framework for dynamic time warping.* Optimization and Engineering, 2022. [rdcu.be/cT5dD](https://rdcu.be/cT5dD)
 
 ## License
 
