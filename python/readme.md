@@ -31,14 +31,20 @@ phi, x_tau, f_tau, g = gdtw.warp(x, y)   # x_tau.shape == (300, 2)
 
 ## Running the tests
 
-From the repo root:
+From this directory (`python/`):
 
 ```
 pip install -e ".[test]"
 python -m pytest test/ -v
 ```
 
-This runs the 1-D regression suite (`test/test_warp.py`) and the multi-dimensional tests (`test/test_multid.py`).
+Or from the repo root: `pip install -e ./python && pytest python/test -v`.
+
+Coverage:
+- `test/test_warp.py` — end-to-end `warp()` behavior, parametrized over scalar (`d=1`) and multi-channel (`d=2`, `d=3`) signals: shape contracts, quadratic-phi recovery (L1/L2), identity warp, callable/tuple input routing, channel-mismatch rejection, and the pinned numerical baseline (`f_tau ≈ 0.16694595777903623`).
+- `test/test_loss.py` — Huber loss / regularizer surface and custom callable losses.
+- `test/test_signal.py` — `Signal` class and per-channel scaling.
+- `test/test_symmetric.py` — symmetric warping path `ψ(t) = 2t − φ(t)`.
 
 ## Our Paper
 
