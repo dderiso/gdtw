@@ -69,7 +69,7 @@ class BuildExt(build_ext):
 
 cpp_module = Extension(
   'gdtwcpp', 
-  sources=['gdtw/gdtw_solver.cpp'],
+  sources=['gdtw/bindings.cpp'],
   include_dirs=[
     np.get_include(),
     "./gdtw",

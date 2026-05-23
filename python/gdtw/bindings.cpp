@@ -21,7 +21,7 @@
 #include <numpy/ndarraytypes.h>
 #include <numpy/npy_math.h>
 
-#include "gdtw.hpp"
+#include "solver.hpp"
 
 // get type of object (function or string)
 void set_loss_functional(PyObject*& obj, std::function<double(const double&)>& func, double huber_delta){

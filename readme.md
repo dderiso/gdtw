@@ -32,10 +32,10 @@ The two implementations share the same iterative DP solver and the same test sur
 |                          | `python/`                              | `cpp/`                                |
 | ---                      | ---                                    | ---                                   |
 | Core class               | `gdtw.GDTW`                            | `gdtw::GDTW`                          |
-| DP kernel                | `gdtw/gdtw.hpp` (C++, ~140 LOC)        | `cpp/src/solver.cpp` (same recurrence)|
+| DP kernel                | `gdtw/solver.hpp`                      | `cpp/src/solver.cpp`                  |
 | Build system             | `setuptools` (`pip install .`)         | CMake 3.20+, C++20                    |
 | External deps            | NumPy                                  | none                                  |
-| Test framework           | pytest                                 | doctest (vendored)                    |
+| Test framework           | pytest                                 | doctest                               |
 | Multi-channel signals    | ✓                                      | ✓                                     |
 | Symmetric mode           | ✓                                      | ✓                                     |
 | Losses / regularizers    | L1, L2, Huber, custom callable         | L1, L2, Huber, custom callable        |

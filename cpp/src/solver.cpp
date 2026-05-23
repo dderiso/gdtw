@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: Apache-2.0
  *
- * Port of python/gdtw/gdtw.hpp::solve. The DP recurrence, the cumulative-cost
+ * Port of python/gdtw/solver.hpp::solve. The DP recurrence, the cumulative-cost
  * encoding (n[i,j] = D[i,j] + lambda_cuml * R_cuml(Tau[i,j] - t[i])), the
  * Bellman path-cost update, the boundary-condition handling, and the
  * backtrack are all kept identical so this implementation reproduces the

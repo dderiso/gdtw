@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build Python wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -37,13 +37,16 @@ jobs:
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.21.3
 
+      # The Python package lives in python/ — pass it as the positional
+      # package-dir to cibuildwheel.
       - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse
+        run: python -m cibuildwheel python --output-dir wheelhouse
         env:
           CIBW_ENVIRONMENT: PIP_ONLY_BINARY=":all:"
           CIBW_SKIP: pp* *_i686 *-musllinux_*
           # Run the pytest suite against each built wheel so platform-specific
-          # C++/numpy issues are caught before publishing.
+          # C++/numpy issues are caught before publishing. {project} resolves
+          # to the package-dir (python/), so {project}/test == python/test.
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: pytest {project}/test -v
 
@@ -51,23 +54,42 @@ jobs:
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
           path: ./wheelhouse/*.whl
-          
+
   make_sdist:
-    name: Make SDist
+    name: Make Python SDist
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
 
     - name: Build SDist
-      run: pipx run build --sdist
+      run: pipx run build --sdist python
 
     - uses: actions/upload-artifact@v4
       with:
         name: cibw-sdist
-        path: dist/*.tar.gz
-        
+        path: python/dist/*.tar.gz
+
+  build_cpp:
+    name: Build & test cpp/ on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S cpp -B cpp/build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build cpp/build --config Release -j
+
+      - name: Test
+        run: ctest --test-dir cpp/build --output-on-failure -C Release
+
   upload_all:
-    needs: [build_wheels, make_sdist]
+    needs: [build_wheels, make_sdist, build_cpp]
     environment: pypi
     permissions:
       id-token: write
