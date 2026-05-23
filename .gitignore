@@ -4,21 +4,25 @@ __pycache__
 **/__pycache__/
 build/*
 # dist/*
-gdtw.egg-info/*
+**/gdtw.egg-info/*
 deploy_to_pypi.sh
-test/test.pkl
+**/test/test.pkl
+**/test/x_tau.pkl
 **/._.DS_Store
 **/.DS_Store
 
-test/x_tau.pkl
 **/*.code-workspace
-gdtw/gdtw.h
-gdtw/gdtw.f90
-gdtw/gdtw_oop.hpp
+python/gdtw/gdtw.h
+python/gdtw/gdtw.f90
+python/gdtw/gdtw_oop.hpp
 
-# Compiled C++ extension (built in-tree by `pip install -e .`)
+# Compiled C++ extension (built in-tree by `pip install -e ./python`)
 *.so
 gdtwcpp*.so
 
 # pytest
 .pytest_cache/
+
+# C++ build (cpp/)
+cpp/build/
+cpp/.cache/
