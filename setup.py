@@ -73,7 +73,9 @@ cpp_module = Extension(
     np.get_include(),
     "./gdtw",
   ],
-  extra_compile_args=["-Ofast", "-Wall", "-std=c++11"],# "-flto"], # "-target", "x86_64-apple-macos"
+  # -O3, not -Ofast: -Ofast implies -ffinite-math-only, under which the
+  # solver's IEEE-infinity comparisons (GDTW_INF in gdtw.hpp) are undefined.
+  extra_compile_args=["-O3", "-Wall", "-std=c++11"],# "-flto"], # "-target", "x86_64-apple-macos"
   language="c++11"
 )
 

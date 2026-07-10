@@ -25,9 +25,18 @@
 
 // get type of object (function or string)
 void set_loss_functional(PyObject*& obj, std::function<double(const double&)>& func, double huber_delta){
-    // Python function
+    // Python function. "d" passes the argument at double precision (the "f"
+    // format truncated to single precision), and the result must be released:
+    // PyObject_CallFunction returns a new reference, which previously leaked
+    // once per evaluation across the O(N*M^2) solver loop.
     if(PyCallable_Check(obj)) {
-        func = [obj](const double& x) { return PyFloat_AsDouble(PyObject_CallFunction(obj,"f",x)); };
+        func = [obj](const double& x) {
+            PyObject* result = PyObject_CallFunction(obj, "d", x);
+            if (result == NULL) throw std::runtime_error("set_loss_functional: user-supplied penalty raised an exception.");
+            const double value = PyFloat_AsDouble(result);
+            Py_DECREF(result);
+            return value;
+        };
         return;
     }
 

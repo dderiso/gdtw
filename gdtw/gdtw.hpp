@@ -21,10 +21,18 @@
 #include <iterator>
 #include <iostream>
 #include <cfloat>
+#include <limits>
 #include <Python.h>
 #include <functional>
 
-#define INFINITY 0x7f800000UL // std::numeric_limits<double>::infinity()
+// A true IEEE infinity. The previous sentinel (#define INFINITY 0x7f800000UL)
+// evaluated to the finite integer 2,139,095,040, which was only safe because
+// costs are nonnegative; a custom penalty returning negative values could
+// produce path costs that undercut an "unreached" state. A named constant
+// avoids redefining the reserved C macro INFINITY. Requires IEEE-conformant
+// compares, so build with -O3 (not -Ofast/-ffast-math, whose
+// -ffinite-math-only makes comparisons against infinity undefined).
+static const double GDTW_INF = std::numeric_limits<double>::infinity();
 
 // loss functionals
 #define L1_PENALTY(x) std::abs(x)
@@ -73,14 +81,14 @@ int solve(
     for (i=0; i<N; i++){
         for (j=0; j<M; j++){
             n(i,j) = D(i,j) + lambda_cuml * R_cuml( Tau(i,j) - t[i] ); 
-            f(i,j) = INFINITY;
+            f(i,j) = GDTW_INF;
         }
     }
 
     // init by filling i=0
-    const int j_center = (M-1)/2 + 1; // M is always odd
+    const int j_center = (M-1)/2; // M is always odd, so this is the exact 0-based center
     if (BC_start_stop){
-        for (j=0; j<M; j++) f(0,j) = INFINITY;
+        for (j=0; j<M; j++) f(0,j) = GDTW_INF;
         f(0,j_center) = n(0,j_center); // enforce t_0 = 0
     } else {
         for (j=0; j<M; j++) f(0,j) = n(0,j);
@@ -111,7 +119,7 @@ int solve(
     } 
     else {
         // argmin (unordered, linear search)
-        min = INFINITY;
+        min = GDTW_INF;
         for (j=0; j<M; j++){
             min_ = f(N-1,j);
             if (min_ < min ){
