@@ -1,13 +1,13 @@
 /*
  * SPDX-License-Identifier: Apache-2.0
- * 
+ *
  * Copyright (C) 2019-2026 Dave Deriso <dderiso@alumni.stanford.edu>, Twitter: @davederiso
  * Copyright (C) 2019-2024 Stephen Boyd
- * 
+ *
  * GDTW is a Python/C++ library that performs dynamic time warping.
- * GDTW improves upon other methods (such as the original DTW, ShapeDTW, and FastDTW) by introducing regularization, 
- * which obviates the need for pre-processing, and cross-validation for choosing optimal regularization hyper-parameters. 
- * 
+ * GDTW improves upon other methods (such as the original DTW, ShapeDTW, and FastDTW) by introducing regularization,
+ * which obviates the need for pre-processing, and cross-validation for choosing optimal regularization hyper-parameters.
+ *
  * Paper: https://rdcu.be/cT5dD
  * Source: https://github.com/dderiso/gdtw
  * Docs: https://dderiso.github.io/gdtw
@@ -22,6 +22,18 @@
 #include <numpy/npy_math.h>
 
 #include "gdtw.hpp"
+
+// Built-in penalty strings dispatch as small codes (inlined switch in the
+// kernel, GIL released). Returns false for non-string objects; throws for
+// unknown strings, matching set_loss_functional's message.
+static bool penalty_code_of(PyObject* obj, double huber_delta, GDTWPenaltyCode* out){
+    if (!PyObject_TypeCheck(obj, &PyUnicode_Type)) return false;
+    out->delta = huber_delta;
+    if (PyUnicode_CompareWithASCIIString(obj, "L2") == 0)    { out->type = GDTW_PEN_L2;    return true; }
+    if (PyUnicode_CompareWithASCIIString(obj, "L1") == 0)    { out->type = GDTW_PEN_L1;    return true; }
+    if (PyUnicode_CompareWithASCIIString(obj, "huber") == 0) { out->type = GDTW_PEN_HUBER; return true; }
+    throw std::runtime_error("set_loss_functional: Unknown string: " + std::string(PyUnicode_AsUTF8(obj)) + ". Acceptable strings are 'L1', 'L2', or 'huber'. If you feel this error is incorrect, please create a GitHub issue at https://github.com/dderiso/gdtw/issues with this message and the inputs you used when calling the gdtw solver.");
+}
 
 // get type of object (function or string)
 void set_loss_functional(PyObject*& obj, std::function<double(const double&)>& func, double huber_delta){
@@ -42,23 +54,9 @@ void set_loss_functional(PyObject*& obj, std::function<double(const double&)>& f
 
     // C++ Function (indexed by string)
     if(!PyObject_TypeCheck(obj, &PyUnicode_Type)) throw std::runtime_error("set_loss_functional: Unhandled type for NumpyObject: " + std::string(Py_TYPE(obj)->tp_name) + ". Please create a GitHub issue at https://github.com/dderiso/gdtw/issues with this message and the inputs you used when calling the gdtw solver.");
-    if(PyUnicode_CompareWithASCIIString(obj,"L2") == 0) {
-        func = [](const double& x) { return L2_PENALTY(x); };
-        return;
-    }
-    if(PyUnicode_CompareWithASCIIString(obj,"L1") == 0) {
-        func = [](const double& x) { return L1_PENALTY(x); };
-        return;
-    }
-    if(PyUnicode_CompareWithASCIIString(obj,"huber") == 0) {
-        const double d = huber_delta;
-        func = [d](const double& x) {
-            const double ax = std::abs(x);
-            return ax <= d ? 0.5 * x * x : d * (ax - 0.5 * d);
-        };
-        return;
-    }
-    throw std::runtime_error("set_loss_functional: Unknown string: " + std::string(PyUnicode_AsUTF8(obj)) + ". Acceptable strings are 'L1', 'L2', or 'huber'. If you feel this error is incorrect, please create a GitHub issue at https://github.com/dderiso/gdtw/issues with this message and the inputs you used when calling the gdtw solver.");
+    GDTWPenaltyCode code;
+    penalty_code_of(obj, huber_delta, &code); // throws on unknown strings
+    func = [code](const double& x) { return code(x); };
 }
 
 static PyObject* extract_python_variables_and_solve(PyObject *self, PyObject *args){
@@ -91,12 +89,6 @@ static PyObject* extract_python_variables_and_solve(PyObject *self, PyObject *ar
         &PyFloat_Type, &f_of_tau_obj  // output: optimal cost
     )) return NULL;
 
-    // loss functionals
-    std::function<double(const double&)> R_cuml;
-    std::function<double(const double&)> R_inst;
-    set_loss_functional(R_cuml_obj, R_cuml, huber_delta);
-    set_loss_functional(R_inst_obj, R_inst, huber_delta);
-
     // inputs
     double* t   = (double*) PyArray_BYTES((PyArrayObject*) t_obj);
     double* D   = (double*) PyArray_BYTES((PyArrayObject*) D_obj);
@@ -112,8 +104,44 @@ static PyObject* extract_python_variables_and_solve(PyObject *self, PyObject *ar
     const int N          = (int) Tau_shape[0];
     const int M          = (int) Tau_shape[1];
 
-    // run solver
-    solve(N, M, t, Tau, D, R_cuml, R_inst, lambda_cuml, lambda_inst, s_min, s_max, BC_start_stop, tau, path, f_of_tau);
+    // run solver; convert C++ exceptions (unknown penalty strings, raising
+    // Python callbacks) into Python errors instead of terminating the
+    // interpreter. Callbacks may already have set a Python error; keep it.
+    int status = 0;
+    try {
+        GDTWPenaltyCode code_cuml, code_inst;
+        const bool fast = !PyCallable_Check(R_cuml_obj) && !PyCallable_Check(R_inst_obj)
+                          && penalty_code_of(R_cuml_obj, huber_delta, &code_cuml)
+                          && penalty_code_of(R_inst_obj, huber_delta, &code_inst);
+        if (fast) {
+            // built-in penalties: no Python calls inside, release the GIL so
+            // thread pools parallelize concurrent solves on real cores
+            Py_BEGIN_ALLOW_THREADS
+            status = solve_impl(N, M, t, Tau, D, code_cuml, code_inst,
+                                lambda_cuml, lambda_inst, s_min, s_max,
+                                BC_start_stop, tau, path, f_of_tau);
+            Py_END_ALLOW_THREADS
+        } else {
+            // user-supplied Python penalties call back into the interpreter,
+            // so the GIL is held
+            std::function<double(const double&)> R_cuml;
+            std::function<double(const double&)> R_inst;
+            set_loss_functional(R_cuml_obj, R_cuml, huber_delta);
+            set_loss_functional(R_inst_obj, R_inst, huber_delta);
+            status = solve(N, M, t, Tau, D, R_cuml, R_inst,
+                           lambda_cuml, lambda_inst, s_min, s_max,
+                           BC_start_stop, tau, path, f_of_tau);
+        }
+    } catch (const std::exception& e) {
+        if (!PyErr_Occurred()) PyErr_SetString(PyExc_RuntimeError, e.what());
+        return NULL;
+    }
+
+    if (status != 0) {
+        PyErr_SetString(PyExc_ValueError,
+            "gdtwcpp.solve: no feasible warp path under the relaxed boundaries (slope band too tight for the candidate grid)");
+        return NULL;
+    }
 
     return Py_BuildValue("i", 1);
 }

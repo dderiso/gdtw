@@ -204,11 +204,17 @@ class GDTW:
         return self
     
     def iterate(self):
+        best = None
         for self.iteration in np.arange(self.max_iters).astype(int):
             # compute graph and solve
             self.compute_taus()
             self.compute_dist_matrix()
             self.solve()
+            # a refinement pass re-grids around the previous solution, which
+            # the new grid need not contain exactly, so a pass can regress:
+            # keep the best pass rather than the last
+            if best is None or self.f_tau < best[0]:
+                best = (float(self.f_tau), self.tau.copy(), self.path.copy())
             # optional methods
             if self.verbose > 1: self.print_iteration()
             if self.callback:    self.callback(self)
@@ -218,6 +224,9 @@ class GDTW:
                     if self.verbose > 2: print("Stopping criterion met.")
                     break
             self.f_tau_ = self.f_tau.copy()
+        self.tau[:] = best[1]
+        self.path[:] = best[2]
+        self.f_tau = np.double(best[0])
         return self
 
     def print_iteration(self):

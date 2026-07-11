@@ -60,6 +60,22 @@ This runs the full suite; multi-dimensional coverage lives in
   (`beta` relaxes the two `s_max` cones only) and require
   `BC_start_stop=False`.
 
+## Performance notes (v1.3.0)
+
+The dynamic-program kernel releases the GIL for the built-in penalty strings
+(`'L1'`, `'L2'`, `'huber'`), so thread pools parallelize concurrent solves on
+real cores; user-supplied Python penalties keep the GIL and run through a
+callback path that now converts exceptions into Python errors instead of
+terminating the interpreter. Built-in penalties dispatch through an inlined
+switch (no `std::function` indirection in the hot loop), the DP rows roll
+(two M-vectors plus one backpointer table), and the slope band is scanned
+through contiguous two-pointer feasibility windows per stage -- results are
+identical to the full scan, verified against an independent NumPy reference
+DP in `test/test_kernel_oracle.py`. Iterative refinement now keeps the best
+pass rather than the last (a re-grid need not contain the incumbent, so a
+pass can regress). Build with `-O3`, never `-Ofast`/`-ffast-math`: the
+kernel's sentinels are true IEEE infinities.
+
 ## Our Paper
 
 Please see [the published article](https://rdcu.be/cT5dD).
