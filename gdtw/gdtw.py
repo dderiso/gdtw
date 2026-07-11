@@ -40,6 +40,9 @@ class GDTW:
         self.loss_f         = None
 
         # symmetric warping: ψ(t) = 2t − φ(t); loss reads y at ψ(t) instead of t.
+        # The regularizers charge φ only -- ψ carries no separate penalty,
+        # since the centering constraint determines it (the paper's symmetric
+        # bidirectional formulation).
         self.symmetric      = False
 
         # search space size
@@ -97,8 +100,17 @@ class GDTW:
     def compute_taus(self):
         # initial u and ls
         if self.iteration == 0:
-            self.u           = np.min([self.s_beta  + self.s_max*self.t,  self.s_beta + 1-self.s_min*(1-self.t) ],axis=0).astype(np.double)
-            self.l           = np.max([               self.s_min*self.t, -self.s_beta + 1-self.s_max*(1-self.t) ],axis=0).astype(np.double)
+            # Extended bounds of the paper ("Alternate boundary and slope
+            # constraints"): beta relaxes the start value phi(0) in [0, beta]
+            # through the forward s_max cone (s_max t + beta) and the terminal
+            # value phi(1) in [1-beta, 1] through the backward s_max cone
+            # (1 - s_max (1-t) - beta). The backward s_min cone is NOT relaxed:
+            # phi(1) <= 1 still caps it. (Previously beta was added to both
+            # branches of u, widening the terminal-side envelope by beta with
+            # no band-feasible path through the extra region; identical at
+            # beta = 0.)
+            self.u           = np.min([self.s_max*self.t + self.s_beta,  1-self.s_min*(1-self.t) ],axis=0).astype(np.double)
+            self.l           = np.max([self.s_min*self.t, 1-self.s_max*(1-self.t) - self.s_beta ],axis=0).astype(np.double)
             
             # restrict domain of phi to domain of t, since x and y may not be defined outside [t_min, t_max]
             self.u           = np.min([self.u,np.repeat(1,self.N)],axis=0)
@@ -343,8 +355,8 @@ class GDTW:
             if self.M > (self.N):
                 print(f"Suggestion: M is too big. Decreasing M from {self.M} to ~{M_suggested} will be faster.")
 
-            if (self.s_beta != 0 and (not callable(self.x) or not callable(self.y))):
-                print(f"Suggestion:\n   x(t) and y(t) are defined over time domain [{0},{1}], but since you've set beta={self.s_beta}, this method will search over tau with a range of [{0-self.s_beta},{1+self.s_beta}].\n   The problem is that you've provided an array instead of a function for x(t) or y(t).\n   This method doesn't perform prediction, and so it won't impute values for x(tau) or y(tau) where tau < min(t) or tau > max(t).\n   Please make sure you use a function to define x and y instead of an array, or you'll have some spurrious results for tau outside the range of t.")
+            if (self.s_beta != 0 and self.BC_start_stop):
+                print(f"Suggestion: you've set beta={self.s_beta} but BC_start_stop=True, which pins the start/end to the center candidate of the relaxed boundary rows (~beta/2 instead of an optimized endpoint). Set BC_start_stop=False for the relaxed-boundary mode to take effect.")
         
             range_x = [np.round(np.nanmin(self.x_f(self.t)),1), np.round(np.nanmax(self.x_f(self.t)),1)]
             range_y = [np.round(np.nanmin(self.y_f(self.t)),1), np.round(np.nanmax(self.y_f(self.t)),1)]

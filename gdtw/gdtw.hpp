@@ -85,13 +85,25 @@ int solve(
         }
     }
 
-    // init by filling i=0
+    // Objective convention. The recursion below accumulates
+    //     f = w_0 * n(0, j_0)  +  sum_{i=0}^{N-2} dt_i * ( e_ijk + n(i+1, k) ),
+    // a right-endpoint quadrature of the paper's discretized objective
+    // (its eq. (7) is the left-endpoint rule; both are first-order
+    // consistent). With pinned endpoints (BC_start_stop) the two rules
+    // differ by a path-constant -- n(0) and n(N-1) are fixed by the
+    // boundary conditions -- so the minimizer is identical and only the
+    // reported value is offset; we keep w_0 = 1 there, bit-compatible
+    // with every published release. With relaxed boundaries the initial
+    // node's cost varies with the start choice, so it must carry the
+    // same quadrature weight as every other node (w_0 = dt_0): a weight
+    // of 1 would overweight the start by a factor 1/dt_0 ~ N.
     const int j_center = (M-1)/2; // M is always odd, so this is the exact 0-based center
     if (BC_start_stop){
         for (j=0; j<M; j++) f(0,j) = GDTW_INF;
-        f(0,j_center) = n(0,j_center); // enforce t_0 = 0
+        f(0,j_center) = n(0,j_center); // enforce t_0 = 0 (path-constant term, w_0 = 1)
     } else {
-        for (j=0; j<M; j++) f(0,j) = n(0,j);
+        const double dt0 = t[1] - t[0];
+        for (j=0; j<M; j++) f(0,j) = dt0 * n(0,j); // relaxed start: w_0 = dt_0
     }
     
     double dt, slope, e_ijk, path_cost;

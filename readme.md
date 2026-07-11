@@ -38,7 +38,27 @@ pip install -e ".[test]"
 python -m pytest test/ -v
 ```
 
-This runs the 1-D regression suite (`test/test_warp.py`) and the multi-dimensional tests (`test/test_multid.py`).
+This runs the full suite; multi-dimensional coverage lives in
+`test/test_warp.py`, which is parametrized over the channel count `d`
+(plus `test/test_loss.py`, `test/test_signal.py`, `test/test_symmetric.py`).
+
+## Numerical conventions
+
+- The C++ dynamic program accumulates a right-endpoint quadrature of the
+  paper's discretized objective, `w_0 n(0) + sum_i dt_i (e_i + n(i+1))`.
+  With pinned endpoints (the default) this has the same minimizer as the
+  paper's left-endpoint rule -- the boundary nodes are path-constants --
+  and only the reported value differs by a constant; with relaxed
+  boundaries (`BC_start_stop=False`) the initial node carries the weight
+  `dt_0` like every other node.
+- In the discretized program the instantaneous penalty is applied to the
+  raw discrete slope, matching the paper's discretized objective.
+- Symmetric mode (`symmetric=True`) reads `y` at `psi(t) = 2t - phi(t)`
+  and regularizes `phi` only: `psi` is determined by the centering
+  constraint, as in the paper's symmetric bidirectional formulation.
+- The relaxed-boundary bounds follow the paper's extended-bounds formula
+  (`beta` relaxes the two `s_max` cones only) and require
+  `BC_start_stop=False`.
 
 ## Our Paper
 
