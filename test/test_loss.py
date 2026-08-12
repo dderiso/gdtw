@@ -13,7 +13,7 @@ import pytest
 
 import gdtw
 
-from _helpers import scalar_pair, multid_pair, phi_true
+from ._helpers import scalar_pair, multid_pair, phi_true
 
 
 def test_huber_loss_runs():

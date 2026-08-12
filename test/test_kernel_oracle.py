@@ -17,7 +17,7 @@ import gdtw
 from gdtw.gdtw import GDTW
 from gdtwcpp import solve as kernel_solve
 
-from _helpers import scalar_pair
+from ._helpers import scalar_pair
 
 _PEN = {
     "L2": lambda u, d: u * u,

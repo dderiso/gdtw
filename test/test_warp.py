@@ -8,7 +8,7 @@ import pytest
 
 import gdtw
 
-from _helpers import make_pair, multid_pair, linf_phi_error, phi_true
+from ._helpers import make_pair, multid_pair, linf_phi_error, phi_true
 
 
 @pytest.mark.parametrize("d", [1, 2, 3])

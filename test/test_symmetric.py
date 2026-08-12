@@ -14,7 +14,7 @@ import pytest
 
 import gdtw
 
-from _helpers import scalar_pair
+from ._helpers import scalar_pair
 
 
 def test_symmetric_exposes_psi_accessors():
